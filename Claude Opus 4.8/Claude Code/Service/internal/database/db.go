@@ -8,13 +8,18 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Connect opens a pgx connection pool and verifies connectivity.
-func Connect(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
+// Connect opens a pgx connection pool and verifies connectivity. maxConns caps
+// the pool size; values <= 0 fall back to a sensible default.
+func Connect(ctx context.Context, dsn string, maxConns int) (*pgxpool.Pool, error) {
 	cfg, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("parse database url: %w", err)
 	}
-	cfg.MaxConns = 10
+	if maxConns <= 0 {
+		maxConns = 10
+	}
+	cfg.MaxConns = int32(maxConns)
+	cfg.MinConns = 2
 	cfg.MaxConnLifetime = time.Hour
 	cfg.HealthCheckPeriod = 30 * time.Second
 

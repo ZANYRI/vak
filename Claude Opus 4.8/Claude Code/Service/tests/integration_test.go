@@ -30,7 +30,7 @@ func dsn(t *testing.T) string {
 
 func TestUsageIdempotencyIntegration(t *testing.T) {
 	ctx := context.Background()
-	pool, err := database.Connect(ctx, dsn(t))
+	pool, err := database.Connect(ctx, dsn(t), 5)
 	if err != nil {
 		t.Fatalf("connect: %v", err)
 	}

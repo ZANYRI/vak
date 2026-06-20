@@ -17,6 +17,9 @@ test-integration: ## Run integration tests (needs TEST_DATABASE_URL)
 vet: ## Run go vet
 	go vet ./...
 
+load: ## Run a load test (vars: SCENARIO, C, D). Needs the stack running.
+	go run ./loadtest -scenario $(or $(SCENARIO),mixed) -c $(or $(C),100) -d $(or $(D),20s)
+
 tidy: ## Tidy modules
 	go mod tidy
 

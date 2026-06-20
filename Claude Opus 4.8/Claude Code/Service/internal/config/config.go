@@ -13,6 +13,7 @@ type Config struct {
 	HTTPPort string
 
 	DatabaseURL string
+	DBMaxConns  int
 	QueueURL    string
 
 	JWTAccessSecret  string
@@ -46,6 +47,7 @@ func Load() (*Config, error) {
 		AppEnv:              getenv("APP_ENV", "local"),
 		HTTPPort:            getenv("HTTP_PORT", "8080"),
 		DatabaseURL:         getenv("DATABASE_URL", "postgres://billing:billing@localhost:5432/billing?sslmode=disable"),
+		DBMaxConns:          getint("DB_MAX_CONNS", 10),
 		QueueURL:            getenv("QUEUE_URL", "redis://localhost:6379/0"),
 		JWTAccessSecret:     getenv("JWT_ACCESS_SECRET", "change-me-access"),
 		JWTRefreshSecret:    getenv("JWT_REFRESH_SECRET", "change-me-refresh"),

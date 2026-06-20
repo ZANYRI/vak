@@ -50,7 +50,7 @@ type Container struct {
 func Build(ctx context.Context, cfg *config.Config, log *slog.Logger) (*Container, error) {
 	metrics := observability.NewMetrics()
 
-	pool, err := database.Connect(ctx, cfg.DatabaseURL)
+	pool, err := database.Connect(ctx, cfg.DatabaseURL, cfg.DBMaxConns)
 	if err != nil {
 		return nil, err
 	}
