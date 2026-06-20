@@ -1,0 +1,138 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------ *
+ * Design tokens — a warm, editorial food palette.
+ * Defined in @theme so Tailwind generates matching utilities
+ * (bg-cream, text-tomato, border-beige, etc.).
+ * ------------------------------------------------------------------ */
+@theme {
+  --color-cream: #fdf8f0;
+  --color-ivory: #fffdf8;
+  --color-card: #ffffff;
+  --color-charcoal: #2b2521;
+  --color-muted: #7b6f63;
+  --color-beige: #ece2d2;
+  --color-beige-dark: #ddcfba;
+
+  --color-tomato: #d1452b;
+  --color-tomato-dark: #b3361f;
+  --color-olive: #5b6e3a;
+  --color-olive-dark: #45562b;
+  --color-saffron: #e8a317;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, 'Times New Roman', serif;
+
+  --radius-card: 1.25rem;
+
+  --shadow-soft: 0 10px 30px -12px rgb(43 37 33 / 0.18);
+  --shadow-lift: 0 22px 50px -20px rgb(43 37 33 / 0.28);
+}
+
+/* ------------------------------------------------------------------ *
+ * Base
+ * ------------------------------------------------------------------ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-charcoal);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  /* Visible, consistent focus styles for keyboard users. */
+  :focus-visible {
+    outline: 3px solid var(--color-saffron);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-saffron) 35%, transparent);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Utilities & components
+ * ------------------------------------------------------------------ */
+@layer components {
+  .container-page {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      100deg,
+      var(--color-beige) 30%,
+      color-mix(in srgb, var(--color-beige) 60%, white) 50%,
+      var(--color-beige) 70%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Reduced motion — disable non-essential animation & smooth scroll.
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Print — clean recipe printouts.
+ * ------------------------------------------------------------------ */
+@media print {
+  header[data-site-header],
+  footer[data-site-footer],
+  [data-no-print] {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+}

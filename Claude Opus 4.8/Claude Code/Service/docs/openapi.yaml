@@ -1,0 +1,2001 @@
+openapi: 3.0.3
+info:
+  title: Billing Service API
+  version: 1.0.0
+  description: >
+    REST API for subscription management and billing. Provides authentication,
+    customer management, plans, subscriptions, usage metering, coupons, tax
+    rules, invoices, and payments.
+
+
+    ## Conventions
+
+    - All monetary amounts are integers in minor units (cents) of the relevant
+      currency. For example `1000` means 10.00 USD.
+    - All endpoints (except auth register/login/refresh and the operational
+      endpoints) require a Bearer JWT in the `Authorization` header.
+    - Mutating POST endpoints that create durable resources support an optional
+      `Idempotency-Key` request header to guarantee at-most-once processing.
+
+    ## Errors
+
+    Errors are returned with a consistent envelope. See the `Error` schema.
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+    description: Authentication and session management
+  - name: Customers
+    description: Customer records
+  - name: Plans
+    description: Subscription plans and pricing models
+  - name: Subscriptions
+    description: Customer subscriptions and lifecycle
+  - name: Usage
+    description: Usage metering for usage-based billing
+  - name: Coupons
+    description: Discount coupons
+  - name: Taxes
+    description: Tax rules by jurisdiction
+  - name: Invoices
+    description: Invoice generation and lifecycle
+  - name: Payments
+    description: Payment processing (simulated)
+  - name: Admin/Health
+    description: Operational endpoints (no authentication)
+
+paths:
+  #######################################################################
+  # Auth
+  #######################################################################
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                role:
+                  type: string
+                  enum: [admin, user]
+                  default: user
+            example:
+              email: jane@example.com
+              password: s3cretpassword
+              role: user
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and obtain a token pair
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+            example:
+              email: jane@example.com
+              password: s3cretpassword
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Exchange a refresh token for a new token pair
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+            example:
+              refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: New token pair
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out and revoke a refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+            example:
+              refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                example:
+                  message: logged out
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the currently authenticated user
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  #######################################################################
+  # Customers
+  #######################################################################
+  /api/v1/customers:
+    post:
+      tags: [Customers]
+      summary: Create a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerInput'
+            example:
+              email: billing@acme.test
+              name: Acme Receivables
+              company_name: Acme Inc.
+              billing_address: 1 Market St, Suite 100
+              country: US
+              region: CA
+              tax_id: US-123456789
+              currency: USD
+              user_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+      responses:
+        '201':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    get:
+      tags: [Customers]
+      summary: List customers
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A list of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/customers/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Customers]
+      summary: Get a customer by ID
+      responses:
+        '200':
+          description: Customer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Customers]
+      summary: Update a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerInput'
+            example:
+              name: Acme Receivables (Updated)
+              region: NY
+      responses:
+        '200':
+          description: Updated customer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Customers]
+      summary: Delete a customer
+      responses:
+        '200':
+          description: Customer deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #######################################################################
+  # Plans
+  #######################################################################
+  /api/v1/plans:
+    post:
+      tags: [Plans]
+      summary: Create a plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanInput'
+            example:
+              name: Pro
+              description: Pro plan with seats and usage
+              currency: USD
+              billing_interval: monthly
+              pricing_model: hybrid
+              base_price_cents: 4900
+              seat_price_cents: 1000
+              included_seats: 5
+              included_units: 1000
+              unit_price_cents: 2
+              usage_metric: api_calls
+              trial_days: 14
+              tiers:
+                - from: 0
+                  to: 1000
+                  unit_price_cents: 2
+                - from: 1001
+                  to: null
+                  unit_price_cents: 1
+      responses:
+        '201':
+          description: Plan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    get:
+      tags: [Plans]
+      summary: List plans
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A list of plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/plans/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Plans]
+      summary: Get a plan by ID
+      responses:
+        '200':
+          description: Plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Plans]
+      summary: Update a plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanInput'
+            example:
+              base_price_cents: 5900
+      responses:
+        '200':
+          description: Updated plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Plans]
+      summary: Delete a plan
+      responses:
+        '200':
+          description: Plan deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #######################################################################
+  # Subscriptions
+  #######################################################################
+  /api/v1/subscriptions:
+    post:
+      tags: [Subscriptions]
+      summary: Create a subscription
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id, plan_id]
+              properties:
+                customer_id:
+                  type: string
+                  format: uuid
+                plan_id:
+                  type: string
+                  format: uuid
+                quantity:
+                  type: integer
+                  minimum: 1
+                  default: 1
+            example:
+              customer_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              plan_id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
+              quantity: 5
+      responses:
+        '201':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    get:
+      tags: [Subscriptions]
+      summary: List subscriptions
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A list of subscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/subscriptions/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Subscriptions]
+      summary: Get a subscription by ID
+      responses:
+        '200':
+          description: Subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Subscriptions]
+      summary: Update a subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  minimum: 1
+                cancel_at_period_end:
+                  type: boolean
+            example:
+              quantity: 10
+              cancel_at_period_end: false
+      responses:
+        '200':
+          description: Updated subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/subscriptions/{id}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    post:
+      tags: [Subscriptions]
+      summary: Cancel a subscription
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                at_period_end:
+                  type: boolean
+                  default: false
+            example:
+              at_period_end: true
+      responses:
+        '200':
+          description: Subscription canceled (or scheduled to cancel)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/subscriptions/{id}/pause:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    post:
+      tags: [Subscriptions]
+      summary: Pause a subscription
+      responses:
+        '200':
+          description: Subscription paused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/subscriptions/{id}/resume:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    post:
+      tags: [Subscriptions]
+      summary: Resume a paused subscription
+      responses:
+        '200':
+          description: Subscription resumed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/subscriptions/{id}/change-plan:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    post:
+      tags: [Subscriptions]
+      summary: Change the plan of a subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan_id]
+              properties:
+                plan_id:
+                  type: string
+                  format: uuid
+            example:
+              plan_id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
+      responses:
+        '200':
+          description: Plan changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/subscriptions/{id}/apply-coupon:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    post:
+      tags: [Subscriptions]
+      summary: Apply a coupon to a subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, currency]
+              properties:
+                code:
+                  type: string
+                currency:
+                  type: string
+                  example: USD
+            example:
+              code: WELCOME20
+              currency: USD
+      responses:
+        '200':
+          description: Coupon applied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  #######################################################################
+  # Usage
+  #######################################################################
+  /api/v1/usage:
+    post:
+      tags: [Usage]
+      summary: Record a usage event
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id, subscription_id, metric, quantity, idempotency_key]
+              properties:
+                customer_id:
+                  type: string
+                  format: uuid
+                subscription_id:
+                  type: string
+                  format: uuid
+                metric:
+                  type: string
+                  example: api_calls
+                quantity:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                idempotency_key:
+                  type: string
+                  description: Unique key guaranteeing the event is recorded at most once.
+                recorded_at:
+                  type: string
+                  format: date-time
+            example:
+              customer_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              subscription_id: 9a1c5f2e-3b7d-4f8a-9c2e-1d4b6f8a0c3e
+              metric: api_calls
+              quantity: 250
+              idempotency_key: usage-2026-06-20-batch-42
+              recorded_at: 2026-06-20T12:00:00Z
+      responses:
+        '201':
+          description: Usage event recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageEvent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Idempotency conflict (key reused with different payload)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: IDEMPOTENCY_CONFLICT
+                  message: idempotency key reused with a different request body
+                  details: {}
+    get:
+      tags: [Usage]
+      summary: List usage events
+      parameters:
+        - name: subscription_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: customer_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A list of usage events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UsageEvent'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/usage/summary:
+    get:
+      tags: [Usage]
+      summary: Get aggregated usage for a subscription
+      parameters:
+        - name: subscription_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Usage summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription_id:
+                    type: string
+                    format: uuid
+                  metric:
+                    type: string
+                  total_quantity:
+                    type: integer
+                    format: int64
+                example:
+                  subscription_id: 9a1c5f2e-3b7d-4f8a-9c2e-1d4b6f8a0c3e
+                  metric: api_calls
+                  total_quantity: 12500
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #######################################################################
+  # Coupons
+  #######################################################################
+  /api/v1/coupons:
+    post:
+      tags: [Coupons]
+      summary: Create a coupon
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponInput'
+            example:
+              code: WELCOME20
+              type: percentage
+              percent_off: 20
+              currency: USD
+              max_redemptions: 100
+              valid_from: 2026-01-01T00:00:00Z
+              valid_until: 2026-12-31T23:59:59Z
+      responses:
+        '201':
+          description: Coupon created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    get:
+      tags: [Coupons]
+      summary: List coupons
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A list of coupons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Coupon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/coupons/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Coupons]
+      summary: Get a coupon by ID
+      responses:
+        '200':
+          description: Coupon
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Coupons]
+      summary: Update a coupon
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponInput'
+            example:
+              max_redemptions: 250
+      responses:
+        '200':
+          description: Updated coupon
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Coupons]
+      summary: Delete a coupon
+      responses:
+        '200':
+          description: Coupon deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #######################################################################
+  # Taxes
+  #######################################################################
+  /api/v1/tax-rules:
+    post:
+      tags: [Taxes]
+      summary: Create a tax rule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxRuleInput'
+            example:
+              country: US
+              region: CA
+              tax_name: CA Sales Tax
+              tax_rate_basis_points: 725
+      responses:
+        '201':
+          description: Tax rule created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxRule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    get:
+      tags: [Taxes]
+      summary: List tax rules
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A list of tax rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaxRule'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/tax-rules/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Taxes]
+      summary: Get a tax rule by ID
+      responses:
+        '200':
+          description: Tax rule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxRule'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Taxes]
+      summary: Update a tax rule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxRuleInput'
+            example:
+              tax_rate_basis_points: 800
+      responses:
+        '200':
+          description: Updated tax rule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxRule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Taxes]
+      summary: Delete a tax rule
+      responses:
+        '200':
+          description: Tax rule deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #######################################################################
+  # Invoices
+  #######################################################################
+  /api/v1/invoices/generate:
+    post:
+      tags: [Invoices]
+      summary: Generate an invoice for a subscription
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subscription_id]
+              properties:
+                subscription_id:
+                  type: string
+                  format: uuid
+            example:
+              subscription_id: 9a1c5f2e-3b7d-4f8a-9c2e-1d4b6f8a0c3e
+      responses:
+        '201':
+          description: Invoice generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    get:
+      tags: [Invoices]
+      summary: List invoices
+      parameters:
+        - name: subscription_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: customer_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, open, paid, void, uncollectible]
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A list of invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invoice'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/invoices/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Invoices]
+      summary: Get an invoice by ID
+      responses:
+        '200':
+          description: Invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/invoices/{id}/finalize:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    post:
+      tags: [Invoices]
+      summary: Finalize a draft invoice
+      responses:
+        '200':
+          description: Invoice finalized (status open)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/invoices/{id}/void:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    post:
+      tags: [Invoices]
+      summary: Void an invoice
+      responses:
+        '200':
+          description: Invoice voided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/invoices/{id}/pay:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    post:
+      tags: [Invoices]
+      summary: Attempt to pay an invoice
+      responses:
+        '200':
+          description: Invoice paid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  #######################################################################
+  # Payments
+  #######################################################################
+  /api/v1/payments/simulate:
+    post:
+      tags: [Payments]
+      summary: Simulate a payment against an invoice
+      description: >
+        Simulates a card charge. The outcome depends on the card number:
+        a card ending in `0000` always succeeds, a card ending in `9999`
+        always fails, and any other card succeeds or fails at random.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invoice_id, card_number]
+              properties:
+                invoice_id:
+                  type: string
+                  format: uuid
+                card_number:
+                  type: string
+                  example: '4111111111110000'
+            example:
+              invoice_id: 4d6f8a0c-3e1d-4b6f-8a0c-3e1d4b6f8a0c
+              card_number: '4111111111110000'
+      responses:
+        '201':
+          description: Payment processed (check status for outcome)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    get:
+      tags: [Payments]
+      summary: List payments
+      parameters:
+        - name: invoice_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A list of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/payments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Payments]
+      summary: Get a payment by ID
+      responses:
+        '200':
+          description: Payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #######################################################################
+  # Admin / Health (no auth)
+  #######################################################################
+  /healthz:
+    get:
+      tags: [Admin/Health]
+      summary: Liveness probe
+      security: []
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+
+  /readyz:
+    get:
+      tags: [Admin/Health]
+      summary: Readiness probe
+      security: []
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ready
+        '503':
+          description: Service not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: not ready
+
+  /metrics:
+    get:
+      tags: [Admin/Health]
+      summary: Prometheus metrics
+      security: []
+      responses:
+        '200':
+          description: Metrics in Prometheus text exposition format
+          content:
+            text/plain:
+              schema:
+                type: string
+
+#########################################################################
+# Components
+#########################################################################
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      description: Resource identifier (UUID)
+      schema:
+        type: string
+        format: uuid
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    Offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: >
+        Optional unique key to make this POST request idempotent. Replaying the
+        same key with the same body returns the original result; replaying with a
+        different body returns an IDEMPOTENCY_CONFLICT error.
+      schema:
+        type: string
+
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: request body failed validation
+              details:
+                email: must be a valid email address
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: authentication required
+              details: {}
+    Forbidden:
+      description: Authenticated but not permitted
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: INSUFFICIENT_PERMISSIONS
+              message: admin role required
+              details: {}
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: NOT_FOUND
+              message: resource not found
+              details: {}
+    Conflict:
+      description: Conflict with current resource state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: CONFLICT
+              message: resource already exists or is in an incompatible state
+              details: {}
+    PaymentRequired:
+      description: Payment failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: PAYMENT_FAILED
+              message: the payment was declined
+              details:
+                reason: card_declined
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - VALIDATION_ERROR
+                - UNAUTHORIZED
+                - FORBIDDEN
+                - NOT_FOUND
+                - CONFLICT
+                - IDEMPOTENCY_CONFLICT
+                - PAYMENT_FAILED
+                - INSUFFICIENT_PERMISSIONS
+                - INTERNAL_ERROR
+            message:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+      example:
+        error:
+          code: VALIDATION_ERROR
+          message: request body failed validation
+          details: {}
+
+    DeletedResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        deleted:
+          type: boolean
+      example:
+        id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        deleted: true
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [admin, user]
+        created_at:
+          type: string
+          format: date-time
+      example:
+        id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        email: jane@example.com
+        role: user
+        created_at: 2026-06-20T10:00:00Z
+
+    TokenPair:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          description: Access token lifetime in seconds.
+          example: 3600
+      example:
+        access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access...
+        refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh...
+        token_type: Bearer
+        expires_in: 3600
+
+    CustomerInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        company_name:
+          type: string
+        billing_address:
+          type: string
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2 country code.
+          example: US
+        region:
+          type: string
+        tax_id:
+          type: string
+        currency:
+          type: string
+          description: ISO 4217 currency code.
+          example: USD
+        user_id:
+          type: string
+          format: uuid
+
+    Customer:
+      allOf:
+        - $ref: '#/components/schemas/CustomerInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+      example:
+        id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        email: billing@acme.test
+        name: Acme Receivables
+        company_name: Acme Inc.
+        billing_address: 1 Market St, Suite 100
+        country: US
+        region: CA
+        tax_id: US-123456789
+        currency: USD
+        user_id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
+        created_at: 2026-06-20T10:00:00Z
+        updated_at: 2026-06-20T10:00:00Z
+
+    PlanTier:
+      type: object
+      properties:
+        from:
+          type: integer
+          format: int64
+        to:
+          type: integer
+          format: int64
+          nullable: true
+          description: Upper bound of the tier; null means unbounded.
+        unit_price_cents:
+          type: integer
+          format: int64
+
+    PlanInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        currency:
+          type: string
+          example: USD
+        billing_interval:
+          type: string
+          enum: [monthly, yearly]
+        pricing_model:
+          type: string
+          enum: [flat, per_seat, usage_based, tiered, hybrid]
+        base_price_cents:
+          type: integer
+          format: int64
+        seat_price_cents:
+          type: integer
+          format: int64
+        included_seats:
+          type: integer
+        included_units:
+          type: integer
+          format: int64
+        unit_price_cents:
+          type: integer
+          format: int64
+        usage_metric:
+          type: string
+        trial_days:
+          type: integer
+        tiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanTier'
+
+    Plan:
+      allOf:
+        - $ref: '#/components/schemas/PlanInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+      example:
+        id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
+        name: Pro
+        description: Pro plan with seats and usage
+        currency: USD
+        billing_interval: monthly
+        pricing_model: hybrid
+        base_price_cents: 4900
+        seat_price_cents: 1000
+        included_seats: 5
+        included_units: 1000
+        unit_price_cents: 2
+        usage_metric: api_calls
+        trial_days: 14
+        tiers:
+          - from: 0
+            to: 1000
+            unit_price_cents: 2
+          - from: 1001
+            to: null
+            unit_price_cents: 1
+        created_at: 2026-06-20T10:00:00Z
+        updated_at: 2026-06-20T10:00:00Z
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customer_id:
+          type: string
+          format: uuid
+        plan_id:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+        status:
+          type: string
+          enum: [trialing, active, past_due, paused, canceled]
+        cancel_at_period_end:
+          type: boolean
+        current_period_start:
+          type: string
+          format: date-time
+        current_period_end:
+          type: string
+          format: date-time
+        coupon_code:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        id: 9a1c5f2e-3b7d-4f8a-9c2e-1d4b6f8a0c3e
+        customer_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        plan_id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
+        quantity: 5
+        status: active
+        cancel_at_period_end: false
+        current_period_start: 2026-06-01T00:00:00Z
+        current_period_end: 2026-07-01T00:00:00Z
+        coupon_code: null
+        created_at: 2026-06-01T00:00:00Z
+        updated_at: 2026-06-01T00:00:00Z
+
+    UsageEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customer_id:
+          type: string
+          format: uuid
+        subscription_id:
+          type: string
+          format: uuid
+        metric:
+          type: string
+        quantity:
+          type: integer
+          format: int64
+        idempotency_key:
+          type: string
+        recorded_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+      example:
+        id: 2f1d4b6f-8a0c-3e1d-4b6f-8a0c3e1d4b6f
+        customer_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        subscription_id: 9a1c5f2e-3b7d-4f8a-9c2e-1d4b6f8a0c3e
+        metric: api_calls
+        quantity: 250
+        idempotency_key: usage-2026-06-20-batch-42
+        recorded_at: 2026-06-20T12:00:00Z
+        created_at: 2026-06-20T12:00:01Z
+
+    CouponInput:
+      type: object
+      properties:
+        code:
+          type: string
+        type:
+          type: string
+          enum: [percentage, fixed_amount]
+        percent_off:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Required when type is percentage.
+        amount_off_cents:
+          type: integer
+          format: int64
+          description: Required when type is fixed_amount.
+        currency:
+          type: string
+          example: USD
+        max_redemptions:
+          type: integer
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+
+    Coupon:
+      allOf:
+        - $ref: '#/components/schemas/CouponInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            redemptions:
+              type: integer
+            created_at:
+              type: string
+              format: date-time
+      example:
+        id: 3e1d4b6f-8a0c-3e1d-4b6f-8a0c3e1d4b6f
+        code: WELCOME20
+        type: percentage
+        percent_off: 20
+        amount_off_cents: null
+        currency: USD
+        max_redemptions: 100
+        redemptions: 12
+        valid_from: 2026-01-01T00:00:00Z
+        valid_until: 2026-12-31T23:59:59Z
+        created_at: 2026-01-01T00:00:00Z
+
+    TaxRuleInput:
+      type: object
+      properties:
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2 country code.
+          example: US
+        region:
+          type: string
+        tax_name:
+          type: string
+        tax_rate_basis_points:
+          type: integer
+          description: Tax rate in basis points (1% = 100).
+          example: 725
+
+    TaxRule:
+      allOf:
+        - $ref: '#/components/schemas/TaxRuleInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
+      example:
+        id: 4b6f8a0c-3e1d-4b6f-8a0c-3e1d4b6f8a0c
+        country: US
+        region: CA
+        tax_name: CA Sales Tax
+        tax_rate_basis_points: 725
+        created_at: 2026-06-20T10:00:00Z
+
+    InvoiceLine:
+      type: object
+      properties:
+        description:
+          type: string
+        quantity:
+          type: integer
+          format: int64
+        unit_price_cents:
+          type: integer
+          format: int64
+        amount_cents:
+          type: integer
+          format: int64
+      example:
+        description: Pro plan base fee
+        quantity: 1
+        unit_price_cents: 4900
+        amount_cents: 4900
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customer_id:
+          type: string
+          format: uuid
+        subscription_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [draft, open, paid, void, uncollectible]
+        currency:
+          type: string
+          example: USD
+        subtotal_cents:
+          type: integer
+          format: int64
+        discount_cents:
+          type: integer
+          format: int64
+        tax_cents:
+          type: integer
+          format: int64
+        total_cents:
+          type: integer
+          format: int64
+        amount_due_cents:
+          type: integer
+          format: int64
+        amount_paid_cents:
+          type: integer
+          format: int64
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLine'
+        created_at:
+          type: string
+          format: date-time
+      example:
+        id: 4d6f8a0c-3e1d-4b6f-8a0c-3e1d4b6f8a0c
+        customer_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        subscription_id: 9a1c5f2e-3b7d-4f8a-9c2e-1d4b6f8a0c3e
+        status: open
+        currency: USD
+        subtotal_cents: 9900
+        discount_cents: 1980
+        tax_cents: 574
+        total_cents: 8494
+        amount_due_cents: 8494
+        amount_paid_cents: 0
+        lines:
+          - description: Pro plan base fee
+            quantity: 1
+            unit_price_cents: 4900
+            amount_cents: 4900
+          - description: Seats (5)
+            quantity: 5
+            unit_price_cents: 1000
+            amount_cents: 5000
+        created_at: 2026-06-20T10:00:00Z
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        invoice_id:
+          type: string
+          format: uuid
+        amount_cents:
+          type: integer
+          format: int64
+        currency:
+          type: string
+          example: USD
+        status:
+          type: string
+          enum: [pending, succeeded, failed, refunded]
+        card_last4:
+          type: string
+          example: '0000'
+        failure_reason:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      example:
+        id: 5e1d4b6f-8a0c-3e1d-4b6f-8a0c3e1d4b6f
+        invoice_id: 4d6f8a0c-3e1d-4b6f-8a0c-3e1d4b6f8a0c
+        amount_cents: 8494
+        currency: USD
+        status: succeeded
+        card_last4: '0000'
+        failure_reason: null
+        created_at: 2026-06-20T10:01:00Z

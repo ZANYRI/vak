@@ -1,0 +1,238 @@
+{
+  "Common": {
+    "siteName": "Savora",
+    "tagline": "Recipes from around the world",
+    "loading": "Loading…",
+    "minutes": "min",
+    "minutesLong": "{count, plural, one {# minute} other {# minutes}}",
+    "servings": "{count, plural, one {# serving} other {# servings}}",
+    "rating": "Rating",
+    "skipToContent": "Skip to content"
+  },
+  "Nav": {
+    "home": "Home",
+    "recipes": "Recipes",
+    "categories": "Categories",
+    "cuisines": "Cuisines",
+    "favorites": "Favorites",
+    "about": "About",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "primary": "Primary navigation"
+  },
+  "LanguageSwitcher": {
+    "label": "Change language",
+    "en": "English",
+    "ru": "Russian",
+    "switchTo": "Switch to {language}"
+  },
+  "Home": {
+    "heroTitle": "Discover recipes from around the world.",
+    "heroSubtitle": "Cook smarter, eat better, and explore new flavors every day.",
+    "searchPlaceholder": "Search recipes, ingredients, cuisines…",
+    "searchSubmit": "Search",
+    "browseAll": "Browse all recipes",
+    "featuredTitle": "Featured recipes",
+    "featuredSubtitle": "Hand-picked dishes our kitchen loves right now.",
+    "popularCuisinesTitle": "Popular cuisines",
+    "popularCuisinesSubtitle": "Take your taste buds on a trip.",
+    "categoriesTitle": "Browse by category",
+    "categoriesSubtitle": "From a quick breakfast to a celebratory dessert.",
+    "statsRecipes": "Recipes",
+    "statsCuisines": "Cuisines",
+    "statsCategories": "Categories",
+    "recipeCount": "{count} recipes"
+  },
+  "Recipes": {
+    "title": "All recipes",
+    "description": "Browse our full collection of {count} bilingual recipes.",
+    "metaTitle": "All Recipes",
+    "metaDescription": "Browse our full collection of bilingual recipes with search, filters and pagination.",
+    "resultsCount": "{count, plural, =0 {No recipes} one {# recipe} other {# recipes}}",
+    "sortLabel": "Sort by",
+    "sort": {
+      "newest": "Newest",
+      "fastest": "Fastest",
+      "easiest": "Easiest",
+      "rating": "Highest rated"
+    },
+    "searchPlaceholder": "Search by title, ingredient or tag…",
+    "noResultsTitle": "No recipes found",
+    "noResultsBody": "Try adjusting your search or clearing some filters.",
+    "clearFilters": "Clear all filters",
+    "viewRecipe": "View recipe"
+  },
+  "Filters": {
+    "title": "Filters",
+    "open": "Show filters",
+    "close": "Hide filters",
+    "all": "All",
+    "cuisine": "Cuisine",
+    "category": "Category",
+    "difficulty": "Difficulty",
+    "diet": "Diet",
+    "mealType": "Meal type",
+    "maxTime": "Max total time",
+    "anyTime": "Any time",
+    "upToMinutes": "Up to {count} min",
+    "apply": "Apply",
+    "reset": "Reset"
+  },
+  "Recipe": {
+    "prepTime": "Prep time",
+    "cookTime": "Cook time",
+    "totalTime": "Total time",
+    "difficulty": "Difficulty",
+    "servings": "Servings",
+    "cuisine": "Cuisine",
+    "category": "Category",
+    "mealType": "Meal type",
+    "diet": "Diet",
+    "ingredients": "Ingredients",
+    "instructions": "Instructions",
+    "step": "Step {number}",
+    "nutrition": "Nutrition (per serving)",
+    "calories": "Calories",
+    "protein": "Protein",
+    "fat": "Fat",
+    "carbs": "Carbs",
+    "grams": "{count} g",
+    "kcal": "{count} kcal",
+    "tips": "Tips",
+    "related": "You might also like",
+    "print": "Print recipe",
+    "share": "Share",
+    "shareCopied": "Link copied!",
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
+    "notFound": "Recipe not found",
+    "notFoundBody": "We couldn't find that recipe. It may have been moved or removed.",
+    "backToRecipes": "Back to all recipes",
+    "by": "by"
+  },
+  "Categories": {
+    "title": "Categories",
+    "metaDescription": "Explore recipes grouped by category — breakfast, dinner, desserts and more.",
+    "subtitle": "Find the right dish for every moment of the day.",
+    "viewCategory": "View {name}",
+    "recipeCount": "{count, plural, =0 {No recipes} one {# recipe} other {# recipes}}",
+    "inCategory": "Recipes in {name}",
+    "names": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "desserts": "Desserts",
+      "soups": "Soups",
+      "salads": "Salads",
+      "vegetarian": "Vegetarian",
+      "quick-meals": "Quick meals",
+      "baking": "Baking",
+      "drinks": "Drinks"
+    }
+  },
+  "Cuisines": {
+    "title": "Cuisines",
+    "metaDescription": "Travel the world through food — Italian, Georgian, Japanese, Mexican and more.",
+    "subtitle": "A taste of every corner of the world.",
+    "viewCuisine": "View {name}",
+    "recipeCount": "{count, plural, =0 {No recipes} one {# recipe} other {# recipes}}",
+    "inCuisine": "{name} recipes",
+    "names": {
+      "italian": "Italian",
+      "french": "French",
+      "georgian": "Georgian",
+      "japanese": "Japanese",
+      "mexican": "Mexican",
+      "indian": "Indian",
+      "mediterranean": "Mediterranean",
+      "ukrainian": "Ukrainian",
+      "latvian": "Latvian",
+      "american": "American"
+    },
+    "intros": {
+      "italian": "Generous, rustic and built on great ingredients — pasta, pizza and the comfort of a shared table.",
+      "french": "Elegant technique meets everyday comfort, from silky soups to buttery pastries.",
+      "georgian": "Bold, herby and hospitable — cheese-filled breads and walnut-rich classics.",
+      "japanese": "Clean, precise and deeply savory, balancing umami, texture and season.",
+      "mexican": "Vibrant, spiced and full of life, layering chillies, lime and fresh herbs.",
+      "indian": "Aromatic and warming, a masterclass in spice, lentils and slow-built flavor.",
+      "mediterranean": "Sun-soaked and wholesome — olive oil, legumes, vegetables and fresh herbs.",
+      "ukrainian": "Hearty and homey, rooted in beets, grains and generous comfort food.",
+      "latvian": "Earthy and northern, celebrating rye, berries and honest baking.",
+      "american": "Comforting and crowd-pleasing, from diner classics to weekend bakes."
+    }
+  },
+  "Favorites": {
+    "title": "Your favorites",
+    "metaDescription": "The recipes you saved, stored right in your browser.",
+    "subtitle": "Recipes you saved, stored privately in your browser.",
+    "emptyTitle": "No favorites yet",
+    "emptyBody": "Tap the heart on any recipe to save it here for later.",
+    "browse": "Browse recipes",
+    "count": "{count, plural, =0 {No saved recipes} one {# saved recipe} other {# saved recipes}}"
+  },
+  "About": {
+    "title": "About Savora",
+    "metaDescription": "About the Savora project — our cooking philosophy, data and image sources.",
+    "introTitle": "About the project",
+    "introBody": "Savora is a demo bilingual recipe website built to showcase modern, accessible and fully internationalized web development. Every recipe is written by hand in both English and Russian.",
+    "philosophyTitle": "Cooking philosophy",
+    "philosophyBody": "We believe good food is generous, seasonal and unfussy. The recipes here favor real ingredients, clear steps and dishes you'll actually want to cook again.",
+    "dataTitle": "Data & sources",
+    "dataBody": "All recipe content is original demo data stored locally in the app. Nutrition values are approximate and provided for illustration only.",
+    "imageTitle": "Image attribution",
+    "imageBody": "Photographs are loaded from open and permissively licensed sources such as Unsplash, Pexels and Wikimedia Commons. All rights remain with their respective photographers.",
+    "a11yTitle": "Accessibility & responsive design",
+    "a11yBody": "The site is built mobile-first with semantic HTML, keyboard navigation, visible focus states, strong color contrast and full support for reduced-motion preferences."
+  },
+  "Pagination": {
+    "label": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {number}",
+    "goToPage": "Go to page {number}",
+    "currentPage": "Page {number}, current page",
+    "summary": "Page {current} of {total}"
+  },
+  "Footer": {
+    "tagline": "Cook smarter, eat better, explore more.",
+    "explore": "Explore",
+    "about": "About",
+    "madeWith": "Made with care for food lovers everywhere.",
+    "rights": "© {year} Savora. Demo project.",
+    "attribution": "Photos via Unsplash, Pexels & Wikimedia Commons."
+  },
+  "Difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "Diet": {
+    "vegetarian": "Vegetarian",
+    "vegan": "Vegan",
+    "gluten-free": "Gluten-free",
+    "dairy-free": "Dairy-free",
+    "pescatarian": "Pescatarian",
+    "high-protein": "High-protein",
+    "low-carb": "Low-carb"
+  },
+  "MealType": {
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "dessert": "Dessert",
+    "snack": "Snack",
+    "appetizer": "Appetizer",
+    "drink": "Drink",
+    "side": "Side"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "body": "Sorry, we couldn't find the page you were looking for.",
+    "home": "Go to home"
+  },
+  "Image": {
+    "loading": "Loading image",
+    "unavailable": "Image unavailable"
+  }
+}
