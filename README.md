@@ -6,7 +6,7 @@
 
 - [service.md](service.md)
 - [site.md](site.md)
- - [3DBenchy](3DBenchy)
+ - [3DBenchy](3DBenchy.md)
 
 Краткое описание каждого промпта:
 
