@@ -1,0 +1,159 @@
+{
+  "common": {
+    "siteName": "Saveur",
+    "tagline": "Recipes from around the world",
+    "loading": "Loading…",
+    "print": "Print recipe",
+    "share": "Share",
+    "shareCopied": "Link copied to clipboard",
+    "backToRecipes": "Back to recipes",
+    "viewRecipe": "View recipe",
+    "viewAll": "View all",
+    "minutes": "min",
+    "servings": "servings",
+    "rating": "rating",
+    "skipToContent": "Skip to content",
+    "language": "Language",
+    "menu": "Menu",
+    "close": "Close"
+  },
+  "nav": {
+    "home": "Home",
+    "recipes": "Recipes",
+    "categories": "Categories",
+    "cuisines": "Cuisines",
+    "favorites": "Favorites",
+    "about": "About"
+  },
+  "home": {
+    "heroTitle": "Discover recipes from around the world.",
+    "heroSubtitle": "Cook smarter, eat better, and explore new flavors every day.",
+    "heroCta": "Browse all recipes",
+    "featured": "Featured recipes",
+    "featuredSubtitle": "Handpicked dishes loved by our community.",
+    "popularCuisines": "Popular cuisines",
+    "popularCuisinesSubtitle": "Travel the world through flavor.",
+    "searchPlaceholder": "Search recipes, ingredients, tags…",
+    "explore": "Explore"
+  },
+  "recipes": {
+    "title": "All recipes",
+    "subtitle": "Browse our full collection of bilingual recipes.",
+    "results": "{count, plural, =0 {No recipes found} one {# recipe} other {# recipes}}",
+    "empty": "No recipes match your search and filters.",
+    "emptyHint": "Try adjusting your filters or clearing the search.",
+    "clearFilters": "Clear filters",
+    "page": "Page {current} of {total}",
+    "showing": "Showing {from}–{to} of {total}"
+  },
+  "recipe": {
+    "ingredients": "Ingredients",
+    "instructions": "Instructions",
+    "nutrition": "Nutrition",
+    "tips": "Tips",
+    "related": "Related recipes",
+    "prepTime": "Prep",
+    "cookTime": "Cook",
+    "totalTime": "Total",
+    "difficulty": "Difficulty",
+    "servings": "Servings",
+    "cuisine": "Cuisine",
+    "category": "Category",
+    "mealType": "Meal type",
+    "diet": "Diet",
+    "tags": "Tags",
+    "calories": "kcal",
+    "protein": "Protein",
+    "fat": "Fat",
+    "carbs": "Carbs",
+    "step": "Step",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "notFound": "Recipe not found",
+    "notFoundDescription": "We couldn't find the recipe you were looking for."
+  },
+  "filters": {
+    "title": "Filters",
+    "toggle": "Filters",
+    "cuisine": "Cuisine",
+    "anyCuisine": "All cuisines",
+    "category": "Category",
+    "anyCategory": "All categories",
+    "difficulty": "Difficulty",
+    "anyDifficulty": "Any difficulty",
+    "diet": "Diet",
+    "anyDiet": "Any diet",
+    "mealType": "Meal type",
+    "anyMealType": "Any meal",
+    "maxTime": "Max cooking time",
+    "anyTime": "Any time",
+    "search": "Search",
+    "searchPlaceholder": "Search by title, ingredient, tag…",
+    "sortBy": "Sort by",
+    "apply": "Apply",
+    "clear": "Clear"
+  },
+  "sort": {
+    "newest": "Newest",
+    "fastest": "Fastest",
+    "easiest": "Easiest",
+    "rating": "Highest rated"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "pagination": {
+    "previous": "Previous page",
+    "next": "Next page",
+    "page": "Page {number}",
+    "currentPage": "Current page, page {number}",
+    "of": "of {total}"
+  },
+  "categories": {
+    "title": "Categories",
+    "subtitle": "Browse recipes by category.",
+    "recipesCount": "{count, plural, =0 {No recipes} one {# recipe} other {# recipes}}",
+    "empty": "No recipes in this category yet."
+  },
+  "cuisines": {
+    "title": "Cuisines",
+    "subtitle": "Explore dishes by their culinary tradition.",
+    "recipesCount": "{count, plural, =0 {No recipes} one {# recipe} other {# recipes}}",
+    "intro": "A selection of authentic {name} recipes.",
+    "empty": "No recipes for this cuisine yet."
+  },
+  "favorites": {
+    "title": "Your favorites",
+    "subtitle": "Recipes you've saved for later.",
+    "empty": "No favorites yet",
+    "emptyDescription": "Tap the heart on any recipe to save it here.",
+    "browseRecipes": "Browse recipes"
+  },
+  "about": {
+    "title": "About the project",
+    "lead": "Saveur is a bilingual recipe catalog built to make cooking more approachable in both Russian and English.",
+    "philosophyTitle": "Cooking philosophy",
+    "philosophy": "We believe great food comes from fresh ingredients, clear instructions, and curiosity about other cultures. Every recipe is written natively in two languages — never machine translated at runtime.",
+    "dataSourceTitle": "Data & sources",
+    "dataSource": "All recipes are authored by the Saveur team and stored as a static bilingual dataset inside the application. Nutritional values are approximate and intended as a guide.",
+    "imagesTitle": "Image attribution",
+    "images": "Recipe photographs are loaded from open and permissive sources including Unsplash, Pexels, and Wikimedia Commons. If an image fails to load, a tasteful fallback is shown. Please respect the license of each source when reusing images.",
+    "accessibilityTitle": "Accessibility & responsive design",
+    "accessibility": "The site is mobile-first, keyboard navigable, and respects prefers-reduced-motion. Semantic landmarks, descriptive alt text, and visible focus states are used throughout."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has moved.",
+    "goHome": "Go to homepage"
+  },
+  "seo": {
+    "homeDescription": "Discover bilingual recipes from around the world. Cook smarter, eat better, and explore new flavors every day.",
+    "recipesDescription": "Browse the full bilingual recipe collection with search, filters, and pagination.",
+    "categoriesDescription": "Browse recipes by category — breakfast, dinner, desserts, soups, and more.",
+    "cuisinesDescription": "Explore authentic recipes from Italian, French, Georgian, Japanese and other cuisines.",
+    "favoritesDescription": "Your saved favorite recipes.",
+    "aboutDescription": "Learn about the Saveur bilingual recipe project, its philosophy, and image attribution."
+  }
+}

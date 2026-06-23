@@ -1,0 +1,635 @@
+openapi: 3.0.3
+info:
+  title: Billing Service API
+  description: Subscription management and billing calculations backend API.
+  version: 1.0.0
+  contact:
+    name: Billing Service Team
+servers:
+  - url: http://localhost:8080/api/v1
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201': { description: User created }
+        '400': { description: Validation error }
+        '409': { description: Email already registered }
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate and receive tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200': { description: Token pair }
+        '401': { description: Invalid credentials }
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '200': { description: New token pair }
+        '401': { description: Invalid token }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout current user
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Logged out }
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Current user }
+  /customers:
+    post:
+      tags: [Customers]
+      summary: Create a customer
+      security: [bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+      responses:
+        '201': { description: Customer created }
+    get:
+      tags: [Customers]
+      summary: List customers
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Customer list }
+  /customers/{id}:
+    get:
+      tags: [Customers]
+      summary: Get a customer
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Customer }
+    patch:
+      tags: [Customers]
+      summary: Update a customer
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Updated customer }
+    delete:
+      tags: [Customers]
+      summary: Delete a customer
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
+  /plans:
+    post:
+      tags: [Plans]
+      summary: Create a subscription plan
+      security: [bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequest'
+      responses:
+        '201': { description: Plan created }
+    get:
+      tags: [Plans]
+      summary: List plans
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Plan list }
+  /plans/{id}:
+    get:
+      tags: [Plans]
+      summary: Get a plan
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Plan }
+    patch:
+      tags: [Plans]
+      summary: Update a plan
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Updated plan }
+    delete:
+      tags: [Plans]
+      summary: Delete a plan
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
+  /subscriptions:
+    post:
+      tags: [Subscriptions]
+      summary: Create a subscription
+      security: [bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+      responses:
+        '201': { description: Subscription created }
+    get:
+      tags: [Subscriptions]
+      summary: List subscriptions
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Subscription list }
+  /subscriptions/{id}:
+    get:
+      tags: [Subscriptions]
+      summary: Get a subscription
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Subscription }
+    patch:
+      tags: [Subscriptions]
+      summary: Update a subscription
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Updated subscription }
+  /subscriptions/{id}/cancel:
+    post:
+      tags: [Subscriptions]
+      summary: Cancel a subscription
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Cancelled }
+  /subscriptions/{id}/pause:
+    post:
+      tags: [Subscriptions]
+      summary: Pause a subscription
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Paused }
+  /subscriptions/{id}/resume:
+    post:
+      tags: [Subscriptions]
+      summary: Resume a subscription
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Resumed }
+  /subscriptions/{id}/change-plan:
+    post:
+      tags: [Subscriptions]
+      summary: Change subscription plan
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plan_id: { type: string, format: uuid }
+      responses:
+        '200': { description: Plan changed }
+  /usage:
+    post:
+      tags: [Usage]
+      summary: Report usage event
+      security: [bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsageEventRequest'
+      responses:
+        '201': { description: Usage recorded }
+    get:
+      tags: [Usage]
+      summary: List usage events
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Usage list }
+  /usage/summary:
+    get:
+      tags: [Usage]
+      summary: Get usage summary
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Summary }
+  /coupons:
+    post:
+      tags: [Coupons]
+      summary: Create a coupon
+      security: [bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCouponRequest'
+      responses:
+        '201': { description: Coupon created }
+    get:
+      tags: [Coupons]
+      summary: List coupons
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Coupon list }
+  /coupons/{id}:
+    get:
+      tags: [Coupons]
+      summary: Get a coupon
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Coupon }
+    patch:
+      tags: [Coupons]
+      summary: Update a coupon
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Updated coupon }
+    delete:
+      tags: [Coupons]
+      summary: Delete a coupon
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
+  /subscriptions/{id}/apply-coupon:
+    post:
+      tags: [Coupons]
+      summary: Apply a coupon to a subscription
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                coupon_id: { type: string, format: uuid }
+      responses:
+        '200': { description: Coupon applied }
+  /tax-rules:
+    post:
+      tags: [Taxes]
+      summary: Create a tax rule
+      security: [bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaxRuleRequest'
+      responses:
+        '201': { description: Tax rule created }
+    get:
+      tags: [Taxes]
+      summary: List tax rules
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Tax rule list }
+  /tax-rules/{id}:
+    patch:
+      tags: [Taxes]
+      summary: Update a tax rule
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Updated tax rule }
+    delete:
+      tags: [Taxes]
+      summary: Delete a tax rule
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
+  /invoices/generate:
+    post:
+      tags: [Invoices]
+      summary: Generate an invoice
+      security: [bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateInvoiceRequest'
+      responses:
+        '201': { description: Invoice generated }
+  /invoices:
+    get:
+      tags: [Invoices]
+      summary: List invoices
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Invoice list }
+  /invoices/{id}:
+    get:
+      tags: [Invoices]
+      summary: Get an invoice
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Invoice }
+  /invoices/{id}/finalize:
+    post:
+      tags: [Invoices]
+      summary: Finalize an invoice
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Invoice finalized }
+  /invoices/{id}/void:
+    post:
+      tags: [Invoices]
+      summary: Void an invoice
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Invoice voided }
+  /invoices/{id}/pay:
+    post:
+      tags: [Invoices]
+      summary: Mark an invoice paid
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Invoice paid }
+  /payments/simulate:
+    post:
+      tags: [Payments]
+      summary: Simulate a payment
+      security: [bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulatePaymentRequest'
+      responses:
+        '201': { description: Payment simulated }
+  /payments:
+    get:
+      tags: [Payments]
+      summary: List payments
+      security: [bearerAuth: []]
+      responses:
+        '200': { description: Payment list }
+  /payments/{id}:
+    get:
+      tags: [Payments]
+      summary: Get a payment
+      security: [bearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Payment }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [email, password, name]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        name: { type: string }
+        role: { type: string, enum: [admin, billing_manager, support, customer] }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    CreateCustomerRequest:
+      type: object
+      required: [email, name, country, currency]
+      properties:
+        user_id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        name: { type: string }
+        company_name: { type: string }
+        billing_address: { type: string }
+        country: { type: string }
+        region: { type: string }
+        tax_id: { type: string }
+        currency: { type: string, length: 3 }
+    CreatePlanRequest:
+      type: object
+      required: [name, currency, billing_interval, base_price_cents]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        currency: { type: string, length: 3 }
+        billing_interval: { type: string, enum: [monthly, yearly] }
+        base_price_cents: { type: integer, minimum: 0 }
+        trial_days: { type: integer, minimum: 0 }
+        is_active: { type: boolean }
+        prices:
+          type: array
+          items:
+            type: object
+            properties:
+              model: { type: string, enum: [flat, per_seat, usage_based, tiered, hybrid] }
+              seat_price_cents: { type: integer }
+              included_seats: { type: integer }
+              unit_price_cents: { type: integer }
+              included_units: { type: integer }
+        tiers:
+          type: array
+          items:
+            type: object
+            properties:
+              from: { type: integer }
+              to: { type: integer, nullable: true }
+              unit_price_cents: { type: integer }
+    CreateSubscriptionRequest:
+      type: object
+      required: [customer_id, plan_id]
+      properties:
+        customer_id: { type: string, format: uuid }
+        plan_id: { type: string, format: uuid }
+        quantity: { type: integer, minimum: 1 }
+        seats: { type: integer, minimum: 1 }
+    UsageEventRequest:
+      type: object
+      required: [customer_id, subscription_id, metric, quantity, idempotency_key]
+      properties:
+        customer_id: { type: string, format: uuid }
+        subscription_id: { type: string, format: uuid }
+        metric: { type: string }
+        quantity: { type: integer, minimum: 1 }
+        idempotency_key: { type: string }
+        recorded_at: { type: string, format: date-time }
+    CreateCouponRequest:
+      type: object
+      required: [code, type]
+      properties:
+        code: { type: string }
+        type: { type: string, enum: [percentage, fixed_amount] }
+        percent_off: { type: integer, minimum: 1, maximum: 100 }
+        amount_off_cents: { type: integer }
+        currency: { type: string, length: 3 }
+        max_redemptions: { type: integer }
+        valid_from: { type: string, format: date-time }
+        valid_until: { type: string, format: date-time }
+        is_active: { type: boolean }
+    CreateTaxRuleRequest:
+      type: object
+      required: [country, tax_name, tax_rate_basis_points]
+      properties:
+        country: { type: string }
+        region: { type: string }
+        tax_name: { type: string }
+        tax_rate_basis_points: { type: integer, minimum: 0, maximum: 100000 }
+        is_active: { type: boolean }
+    GenerateInvoiceRequest:
+      type: object
+      required: [subscription_id, customer_id]
+      properties:
+        subscription_id: { type: string, format: uuid }
+        customer_id: { type: string, format: uuid }
+    SimulatePaymentRequest:
+      type: object
+      required: [invoice_id, card_number]
+      properties:
+        invoice_id: { type: string, format: uuid }
+        card_number: { type: string }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }

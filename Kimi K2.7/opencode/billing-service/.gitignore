@@ -1,0 +1,26 @@
+# Binaries
+/bin/
+/dist/
+*.exe
+*.test
+*.out
+coverage.*
+
+# Python bytecode cache
+__pycache__/
+*.py[cod]
+
+# Env & secrets
+.env
+.env.local
+*.local
+
+# Editors
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# OS
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,158 @@
+{
+  "metadata": {
+    "defaultTitle": "Recipe Haven - Bilingual Recipes",
+    "defaultDescription": "Discover recipes from around the world. Cook smarter, eat better, and explore new flavors every day."
+  },
+  "nav": {
+    "home": "Home",
+    "recipes": "Recipes",
+    "categories": "Categories",
+    "cuisines": "Cuisines",
+    "favorites": "Favorites",
+    "about": "About"
+  },
+  "language": {
+    "label": "Language",
+    "switchTo": "Switch language"
+  },
+  "home": {
+    "heroTitle": "Discover recipes from around the world.",
+    "heroSubtitle": "Cook smarter, eat better, and explore new flavors every day.",
+    "searchPlaceholder": "Search recipes, ingredients...",
+    "browseAll": "Browse all recipes",
+    "featuredTitle": "Featured recipes",
+    "popularCuisines": "Popular cuisines",
+    "cuisineCardCta": "Explore"
+  },
+  "recipes": {
+    "title": "All recipes",
+    "description": "Browse our collection of global recipes.",
+    "searchPlaceholder": "Search title, ingredients, tags...",
+    "sortLabel": "Sort by",
+    "sort": {
+      "newest": "Newest",
+      "fastest": "Fastest",
+      "easiest": "Easiest",
+      "highestRated": "Highest rated"
+    },
+    "noResults": "No recipes match your search.",
+    "results": "{count} recipes",
+    "filters": "Filters",
+    "activeFilters": "Active filters"
+  },
+  "filters": {
+    "cuisine": "Cuisine",
+    "category": "Category",
+    "difficulty": "Difficulty",
+    "diet": "Diet",
+    "mealType": "Meal type",
+    "time": "Max time",
+    "all": "All",
+    "clear": "Clear filters",
+    "apply": "Apply",
+    "difficulties": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "diets": {
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "gluten-free": "Gluten-free",
+      "dairy-free": "Dairy-free"
+    },
+    "mealTypes": {
+      "breakfast": "Breakfast",
+      "brunch": "Brunch",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack",
+      "dessert": "Dessert",
+      "drink": "Drink"
+    }
+  },
+  "recipe": {
+    "ingredients": "Ingredients",
+    "instructions": "Instructions",
+    "nutrition": "Nutrition per serving",
+    "tips": "Chef's tips",
+    "related": "You may also like",
+    "print": "Print recipe",
+    "share": "Share",
+    "favorite": "Add to favorites",
+    "unfavorite": "Remove from favorites",
+    "prepTime": "Prep",
+    "cookTime": "Cook",
+    "totalTime": "Total",
+    "servings": "Servings",
+    "difficulty": "Difficulty",
+    "cuisine": "Cuisine",
+    "category": "Category",
+    "diet": "Diet",
+    "mealType": "Meal type",
+    "calories": "Calories",
+    "protein": "Protein",
+    "fat": "Fat",
+    "carbs": "Carbs",
+    "description": "Description"
+  },
+  "categories": {
+    "title": "Categories",
+    "description": "Find recipes by category.",
+    "labels": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "desserts": "Desserts",
+      "soups": "Soups",
+      "salads": "Salads",
+      "vegetarian": "Vegetarian",
+      "quick-meals": "Quick meals",
+      "baking": "Baking",
+      "drinks": "Drinks"
+    }
+  },
+  "cuisines": {
+    "title": "Cuisines",
+    "description": "Explore recipes by world cuisine.",
+    "intro": "Dive into the flavors of {cuisine}.",
+    "labels": {
+      "italian": "Italian",
+      "french": "French",
+      "georgian": "Georgian",
+      "japanese": "Japanese",
+      "mexican": "Mexican",
+      "indian": "Indian",
+      "mediterranean": "Mediterranean",
+      "ukrainian": "Ukrainian",
+      "latvian": "Latvian",
+      "american": "American"
+    }
+  },
+  "favorites": {
+    "title": "Your favorites",
+    "description": "Recipes you love, saved for later.",
+    "emptyTitle": "No favorites yet",
+    "emptyDescription": "Browse recipes and tap the heart to save your favorites here."
+  },
+  "about": {
+    "title": "About Recipe Haven",
+    "intro": "Recipe Haven is a curated bilingual collection of recipes from around the globe. It is built as a demo application with a focus on performance, accessibility, and beautiful design.",
+    "philosophyTitle": "Cooking philosophy",
+    "philosophy": "We believe that cooking should be joyful and approachable. Each recipe is presented with clear instructions, nutrition facts, and practical tips to help you succeed in the kitchen.",
+    "dataTitle": "Data and images",
+    "data": "All recipe data is stored locally in the application. Images are sourced from open photography platforms such as Unsplash and Pexels. Please respect the licenses of individual photographers when reusing images.",
+    "accessibilityTitle": "Accessibility",
+    "accessibility": "The site uses semantic HTML, keyboard-friendly navigation, visible focus states, and respects prefers-reduced-motion so everyone can enjoy a smooth experience."
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}",
+    "goToPage": "Go to page {page}"
+  },
+  "errors": {
+    "notFound": "Page not found",
+    "recipeNotFound": "Recipe not found"
+  }
+}

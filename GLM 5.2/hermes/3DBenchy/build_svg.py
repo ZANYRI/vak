@@ -1,0 +1,403 @@
+#!/usr/bin/env python3
+"""Generate the animated pseudo-3D 3DBenchy SVG."""
+import os
+
+OUT = os.path.join(os.path.dirname(__file__), "3dbenchy.svg")
+
+def wave_path(baseline, amp, period, x0, x1, close_to):
+    """Smooth quadratic sine-like wave. period must be even; segment = period/2."""
+    seg = period / 2
+    x = x0
+    # align x0 so that the pattern is seamless when translated by -period
+    pts = []
+    # first control raises (up), using q dx -amp seg 0 then t seg 0 ...
+    d = [f"M {x0} {baseline}"]
+    x = x0
+    up = True
+    first = True
+    while x < x1:
+        if first:
+            d.append(f"q {seg/2} {-amp if up else amp} {seg} 0")
+            first = False
+        else:
+            d.append(f"t {seg} 0")
+        x += seg
+        up = not up
+    # close down to a rectangle bottom
+    d.append(f"L {x1} {close_to}")
+    d.append(f"L {x0} {close_to}")
+    d.append("Z")
+    return " ".join(d)
+
+def layer_lines(n, y_top, y_bot, hull_path_id):
+    """Return horizontal-ish lines as a group, clipped to hull side."""
+    lines = []
+    for i in range(n):
+        t = i / (n - 1)
+        y = y_top + (y_bot - y_top) * t
+        # follow near-deck curve roughly: bow at x~360, stern at x~845
+        # bow y rises slightly toward stern; keep simple horizontal line within hull
+        lines.append(f'<line x1="392" y1="{y:.1f}" x2="843" y2="{y:.1f}" '
+                     f'stroke="#0a3a5a" stroke-width="1" opacity="0.18"/>')
+    return "\n    ".join(lines)
+
+svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="100%" height="100%" role="img" aria-labelledby="t d">
+<title id="t">Animated 3D Benchy</title>
+<desc id="d">A polished animated pseudo-3D illustration of the 3D Benchy benchmark tugboat, gently rocking on waves. Pure vector SVG with CSS/SMIL animation, no scripts or external assets.</desc>
+
+<defs>
+  <!-- Hull gradients -->
+  <linearGradient id="hullSideGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#7fd3f2"/>
+    <stop offset="0.18" stop-color="#3aa8e0"/>
+    <stop offset="0.55" stop-color="#1f7fb8"/>
+    <stop offset="1" stop-color="#0d4a6b"/>
+  </linearGradient>
+  <linearGradient id="hullTopGrad" x1="0" y1="0" x2="0.35" y2="1">
+    <stop offset="0" stop-color="#c9efff"/>
+    <stop offset="0.5" stop-color="#6cc6ea"/>
+    <stop offset="1" stop-color="#2a8fc8"/>
+  </linearGradient>
+  <linearGradient id="bowFrontGrad" x1="0" y1="0" x2="1" y2="0.6">
+    <stop offset="0" stop-color="#9fe0f7"/>
+    <stop offset="0.6" stop-color="#46aee4"/>
+    <stop offset="1" stop-color="#17658f"/>
+  </linearGradient>
+  <linearGradient id="lowerHullGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0d4a6b"/>
+    <stop offset="1" stop-color="#062338"/>
+  </linearGradient>
+  <linearGradient id="rimGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#dff5ff" stop-opacity="0.9"/>
+    <stop offset="1" stop-color="#2a8fc8" stop-opacity="0"/>
+  </linearGradient>
+
+  <!-- Cabin -->
+  <linearGradient id="cabinFrontGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#8fd9f4"/>
+    <stop offset="1" stop-color="#2a8fc8"/>
+  </linearGradient>
+  <linearGradient id="cabinSideGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5fb9e4"/>
+    <stop offset="1" stop-color="#17658f"/>
+  </linearGradient>
+  <linearGradient id="roofGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#e8f8ff"/>
+    <stop offset="1" stop-color="#7fd0ef"/>
+  </linearGradient>
+
+  <!-- Chimney -->
+  <linearGradient id="chimneyGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#d6f3ff"/>
+    <stop offset="0.45" stop-color="#3aa8e0"/>
+    <stop offset="1" stop-color="#0d4a6b"/>
+  </linearGradient>
+  <radialGradient id="chimneyTopGrad" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#9fe0f7"/>
+    <stop offset="1" stop-color="#2a8fc8"/>
+  </radialGradient>
+  <radialGradient id="chimneyOpen" cx="0.5" cy="0.4" r="0.6">
+    <stop offset="0" stop-color="#04121f"/>
+    <stop offset="1" stop-color="#0a2a44"/>
+  </radialGradient>
+
+  <!-- Windows / portholes -->
+  <linearGradient id="windowGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0a2236"/>
+    <stop offset="1" stop-color="#04121f"/>
+  </linearGradient>
+  <radialGradient id="portholeGrad" cx="0.4" cy="0.35" r="0.7">
+    <stop offset="0" stop-color="#0a2a44"/>
+    <stop offset="0.6" stop-color="#04121f"/>
+    <stop offset="1" stop-color="#02101c"/>
+  </radialGradient>
+
+  <!-- Waves -->
+  <linearGradient id="wave1Grad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#bfeefb" stop-opacity="0.85"/>
+    <stop offset="1" stop-color="#6cc6ea" stop-opacity="0.2"/>
+  </linearGradient>
+  <linearGradient id="wave2Grad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8fd9f4" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#2a8fc8" stop-opacity="0.1"/>
+  </linearGradient>
+  <linearGradient id="wave3Grad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3aa8e0" stop-opacity="0.35"/>
+    <stop offset="1" stop-color="#0d4a6b" stop-opacity="0.05"/>
+  </linearGradient>
+
+  <!-- Light streak -->
+  <linearGradient id="streakGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+  </linearGradient>
+
+  <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#02101c" stop-opacity="0.5"/>
+    <stop offset="0.7" stop-color="#02101c" stop-opacity="0.2"/>
+    <stop offset="1" stop-color="#02101c" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- Filters -->
+  <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#02101c" flood-opacity="0.35"/>
+  </filter>
+  <filter id="blurShadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="14"/>
+  </filter>
+  <filter id="softBlur" x="-20%" y="-20%" width="140%" height="140%">
+    <feGaussianBlur stdDeviation="3"/>
+  </filter>
+
+  <!-- Hull side path (reused as clip + fill) -->
+  <path id="hullSidePath" d="M 360 392
+    C 360 430, 374 460, 392 482
+    C 480 498, 640 502, 760 492
+    C 800 488, 830 480, 845 470
+    L 845 432
+    C 700 446, 520 446, 360 392 Z"/>
+  <clipPath id="hullSideClip">
+    <use href="#hullSidePath"/>
+  </clipPath>
+
+  <path id="deckPath" d="M 360 392
+    C 420 352, 560 340, 700 344
+    L 845 356
+    L 845 432
+    C 700 446, 520 446, 360 392 Z"/>
+  <clipPath id="deckClip">
+    <use href="#deckPath"/>
+  </clipPath>
+</defs>
+
+<style>
+  #benchy {{
+    transform-box: fill-box;
+    transform-origin: 50% 62%;
+    animation: benchyRock 3.6s ease-in-out infinite;
+    will-change: transform;
+  }}
+  @keyframes benchyRock {{
+    0%, 100% {{ transform: rotate(-3deg) translateY(0); }}
+    50%      {{ transform: rotate(3deg) translateY(-7px); }}
+  }}
+  .wave1 {{ animation: waveMove1 4s linear infinite; }}
+  .wave2 {{ animation: waveMove2 6.5s linear infinite; }}
+  .wave3 {{ animation: waveMove3 9s linear infinite; }}
+  @keyframes waveMove1 {{ from {{ transform: translateX(0); }} to {{ transform: translateX(-120px); }} }}
+  @keyframes waveMove2 {{ from {{ transform: translateX(0); }} to {{ transform: translateX(-160px); }} }}
+  @keyframes waveMove3 {{ from {{ transform: translateX(0); }} to {{ transform: translateX(-200px); }} }}
+  #streak {{
+    transform-box: fill-box;
+    animation: streak 4.5s ease-in-out infinite alternate;
+  }}
+  @keyframes streak {{
+    from {{ transform: translateX(0); opacity: 0.15; }}
+    20%  {{ opacity: 0.55; }}
+    80%  {{ opacity: 0.55; }}
+    to   {{ transform: translateX(440px); opacity: 0.15; }}
+  }}
+  #cast-shadow {{
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: shadowPulse 3.6s ease-in-out infinite;
+  }}
+  @keyframes shadowPulse {{
+    0%, 100% {{ transform: scale(1); opacity: 0.9; }}
+    50%      {{ transform: scale(1.05); opacity: 0.75; }}
+  }}
+  @media (prefers-reduced-motion: reduce) {{
+    #benchy, .wave1, .wave2, .wave3, #streak, #cast-shadow {{
+      animation: none;
+    }}
+  }}
+</style>
+
+<!-- ===== WAVES (behind boat) ===== -->
+<g id="waves">
+  <path class="wave3" d="{wave_path(548, 7, 200, -200, 1400, 560)}" fill="url(#wave3Grad)"/>
+  <path class="wave2" d="{wave_path(532, 6, 160, -200, 1400, 560)}" fill="url(#wave2Grad)"/>
+  <path class="wave1" d="{wave_path(518, 5, 120, -200, 1400, 560)}" fill="url(#wave1Grad)"/>
+</g>
+
+<!-- ===== CAST SHADOW ===== -->
+<g id="shadow">
+  <ellipse id="cast-shadow" cx="600" cy="520" rx="280" ry="26" fill="url(#shadowGrad)" filter="url(#blurShadow)"/>
+</g>
+
+<!-- ===== BOAT ===== -->
+<g id="benchy" filter="url(#softShadow)">
+
+  <!-- HULL -->
+  <g id="hull">
+    <!-- lower curved hull body (dark underside) -->
+    <path d="M 392 482
+      C 480 498, 640 502, 760 492
+      C 800 488, 830 480, 845 470
+      C 820 500, 700 512, 560 510
+      C 470 508, 420 498, 392 482 Z"
+      fill="url(#lowerHullGrad)"/>
+    <!-- main hull side -->
+    <use href="#hullSidePath" fill="url(#hullSideGrad)" stroke="#0a3a5a" stroke-width="2.5"/>
+    <!-- inner shadow under upper rim -->
+    <path d="M 360 392
+      C 520 446, 700 446, 845 432
+      L 845 440
+      C 700 454, 520 454, 360 400 Z"
+      fill="#0a3a5a" opacity="0.35" filter="url(#softBlur)"/>
+    <!-- bright upper rim highlight -->
+    <path d="M 360 392
+      C 420 352, 560 340, 700 344
+      L 845 356
+      L 845 362
+      C 700 350, 560 346, 360 396 Z"
+      fill="url(#rimGrad)" opacity="0.9"/>
+    <!-- bow front face -->
+    <path d="M 360 392
+      C 360 430, 374 460, 392 482
+      C 386 468, 378 442, 372 414
+      C 368 404, 363 397, 360 392 Z"
+      fill="url(#bowFrontGrad)" stroke="#0a3a5a" stroke-width="1.5"/>
+    <!-- deck top plane -->
+    <use href="#deckPath" fill="url(#hullTopGrad)" stroke="#0a3a5a" stroke-width="2.5"/>
+    <!-- layer lines on hull side -->
+    <g clip-path="url(#hullSideClip)" opacity="0.9">
+      {layer_lines(7, 412, 478, 'hullSidePath')}
+    </g>
+    <!-- light streak on hull side -->
+    <g clip-path="url(#hullSideClip)">
+      <rect id="streak" x="360" y="392" width="70" height="110"
+            fill="url(#streakGrad)" opacity="0.5"/>
+    </g>
+    <!-- deck subtle inner shadow (depth) -->
+    <path d="M 360 392
+      C 420 352, 560 340, 700 344
+      L 845 356
+      L 845 366
+      C 700 354, 560 350, 360 402 Z"
+      fill="#0a3a5a" opacity="0.18"/>
+  </g>
+
+  <!-- DECK DETAILS (arch / bridge / holes) -->
+  <g id="deck" clip-path="url(#deckClip)">
+    <!-- small arch / bridge near bow -->
+    <path d="M 470 392 a 22 16 0 0 1 44 0 Z" fill="#0a3a5a" opacity="0.55"/>
+    <rect x="468" y="388" width="48" height="6" rx="2" fill="#17658f" opacity="0.6"/>
+    <!-- small tolerance holes -->
+    <circle cx="430" cy="378" r="4.5" fill="#04121f"/>
+    <circle cx="430" cy="378" r="3" fill="#0a2a44"/>
+    <circle cx="560" cy="372" r="3.5" fill="#04121f"/>
+    <!-- thin contour line along deck -->
+    <path d="M 372 396 C 430 360, 560 348, 700 352 L 840 364"
+          fill="none" stroke="#dff5ff" stroke-width="1" opacity="0.5"/>
+  </g>
+
+  <!-- PORTHOLES -->
+  <g id="windows">
+    <!-- side portholes on hull -->
+    <g>
+      <circle cx="470" cy="452" r="17" fill="#0a3a5a"/>
+      <circle cx="470" cy="452" r="14" fill="url(#portholeGrad)"/>
+      <circle cx="470" cy="452" r="14" fill="none" stroke="#dff5ff" stroke-width="1.2" opacity="0.7"/>
+      <ellipse cx="466" cy="448" rx="4" ry="2.5" fill="#bfeefb" opacity="0.55"/>
+    </g>
+    <g>
+      <circle cx="570" cy="458" r="17" fill="#0a3a5a"/>
+      <circle cx="570" cy="458" r="14" fill="url(#portholeGrad)"/>
+      <circle cx="570" cy="458" r="14" fill="none" stroke="#dff5ff" stroke-width="1.2" opacity="0.7"/>
+      <ellipse cx="566" cy="454" rx="4" ry="2.5" fill="#bfeefb" opacity="0.55"/>
+    </g>
+    <g>
+      <circle cx="672" cy="455" r="17" fill="#0a3a5a"/>
+      <circle cx="672" cy="455" r="14" fill="url(#portholeGrad)"/>
+      <circle cx="672" cy="455" r="14" fill="none" stroke="#dff5ff" stroke-width="1.2" opacity="0.7"/>
+      <ellipse cx="668" cy="451" rx="4" ry="2.5" fill="#bfeefb" opacity="0.55"/>
+    </g>
+  </g>
+
+  <!-- CABIN -->
+  <g id="cabin">
+    <!-- side (starboard) wall -->
+    <polygon points="548,396 708,396 708,350 548,350"
+             fill="url(#cabinSideGrad)" stroke="#0a3a5a" stroke-width="2"/>
+    <!-- front (bow-facing) wall, slanted -->
+    <polygon points="548,396 560,370 560,324 548,350"
+             fill="url(#cabinFrontGrad)" stroke="#0a3a5a" stroke-width="2"/>
+    <!-- roof slab: top face -->
+    <polygon points="548,350 560,324 720,324 708,350"
+             fill="url(#roofGrad)" stroke="#0a3a5a" stroke-width="2"/>
+    <!-- roof thickness (front overhang) -->
+    <polygon points="560,324 720,324 720,330 560,330"
+             fill="#2a8fc8" stroke="#0a3a5a" stroke-width="1.2"/>
+    <!-- roof highlight edge -->
+    <line x1="560" y1="324" x2="720" y2="324" stroke="#e8f8ff" stroke-width="1.4" opacity="0.9"/>
+
+    <!-- front window (slanted parallelogram) -->
+    <polygon points="552,388 557,374 557,338 552,352"
+             fill="url(#windowGrad)" stroke="#0a3a5a" stroke-width="1"/>
+    <polygon points="553,386 556,376 556,340 553,350"
+             fill="none" stroke="#7fd3f2" stroke-width="0.8" opacity="0.7"/>
+    <line x1="554.5" y1="370" x2="554.5" y2="346" stroke="#bfeefb" stroke-width="1" opacity="0.6"/>
+
+    <!-- side windows (two rounded rects) -->
+    <rect x="566" y="372" width="52" height="20" rx="4" fill="url(#windowGrad)" stroke="#0a3a5a" stroke-width="1.2"/>
+    <rect x="568" y="374" width="48" height="16" rx="3" fill="none" stroke="#7fd3f2" stroke-width="0.8" opacity="0.6"/>
+    <line x1="572" y1="376" x2="572" y2="388" stroke="#bfeefb" stroke-width="1" opacity="0.55"/>
+
+    <rect x="638" y="372" width="52" height="20" rx="4" fill="url(#windowGrad)" stroke="#0a3a5a" stroke-width="1.2"/>
+    <rect x="640" y="374" width="48" height="16" rx="3" fill="none" stroke="#7fd3f2" stroke-width="0.8" opacity="0.6"/>
+    <line x1="644" y1="376" x2="644" y2="388" stroke="#bfeefb" stroke-width="1" opacity="0.55"/>
+  </g>
+
+  <!-- CHIMNEY -->
+  <g id="chimney">
+    <!-- base ring on roof -->
+    <ellipse cx="640" cy="324" rx="26" ry="8" fill="#17658f" stroke="#0a3a5a" stroke-width="1.2"/>
+    <!-- cylinder side wall -->
+    <path d="M 614 322 L 614 286 A 26 9 0 0 0 666 286 L 666 322 A 26 9 0 0 1 614 322 Z"
+          fill="url(#chimneyGrad)" stroke="#0a3a5a" stroke-width="1.8"/>
+    <!-- top rim -->
+    <ellipse cx="640" cy="286" rx="26" ry="9" fill="url(#chimneyTopGrad)" stroke="#0a3a5a" stroke-width="1.4"/>
+    <!-- dark inner opening -->
+    <ellipse cx="640" cy="286" rx="20" ry="6.4" fill="url(#chimneyOpen)"/>
+    <!-- upper rim highlight -->
+    <path d="M 618 284 A 26 9 0 0 1 662 284" fill="none" stroke="#e8f8ff" stroke-width="1.6" opacity="0.95"/>
+  </g>
+
+  <!-- HIGHLIGHTS -->
+  <g id="highlights">
+    <!-- bow edge highlight -->
+    <path d="M 360 392 C 362 430, 376 460, 392 482" fill="none" stroke="#dff5ff" stroke-width="1.6" opacity="0.6"/>
+    <!-- deck far edge highlight -->
+    <path d="M 360 392 C 420 352, 560 340, 700 344 L 845 356" fill="none" stroke="#e8f8ff" stroke-width="1.2" opacity="0.5"/>
+    <!-- stern edge -->
+    <line x1="845" y1="356" x2="845" y2="432" stroke="#dff5ff" stroke-width="1" opacity="0.4"/>
+  </g>
+
+  <!-- DETAILS (label + micro marks) -->
+  <g id="details">
+    <text x="615" y="430" font-family="sans-serif" font-size="15" font-weight="700"
+          fill="#e8f8ff" opacity="0.55" text-anchor="middle"
+          transform="rotate(-1 615 430)" letter-spacing="1">3DBENCHY</text>
+    <!-- embossed tick marks on hull side -->
+    <g stroke="#dff5ff" stroke-width="1" opacity="0.4">
+      <line x1="735" y1="455" x2="735" y2="463"/>
+      <line x1="745" y1="453" x2="745" y2="461"/>
+      <line x1="755" y1="451" x2="755" y2="459"/>
+    </g>
+    <!-- small engraved circle (tolerance detail) on deck -->
+    <circle cx="500" cy="372" r="5" fill="none" stroke="#0a3a5a" stroke-width="1.2" opacity="0.7"/>
+    <circle cx="500" cy="372" r="2.5" fill="#04121f" opacity="0.6"/>
+  </g>
+
+</g>
+<!-- ===== END BOAT ===== -->
+
+</svg>
+'''
+
+with open(OUT, "w", encoding="utf-8") as f:
+    f.write(svg)
+
+print("WROTE", OUT, len(svg), "bytes")
