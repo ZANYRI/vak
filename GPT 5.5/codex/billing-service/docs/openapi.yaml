@@ -1,0 +1,87 @@
+openapi: 3.1.0
+info:
+  title: Billing Service API
+  version: 1.0.0
+  description: Subscription management, usage billing, invoices and simulated payments. All monetary values are integer minor units.
+servers:
+  - url: http://localhost:8080/api/v1
+security:
+  - bearerAuth: []
+paths:
+  /auth/register:
+    post:
+      security: []
+      summary: Register a customer account
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Register'}}}}
+      responses: {'201': {description: Tokens issued}, '400': {$ref: '#/components/responses/ValidationError'}}
+  /auth/login:
+    post:
+      security: []
+      summary: Log in
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Login'}}}}
+      responses: {'200': {description: Tokens issued}, '401': {$ref: '#/components/responses/Unauthorized'}}
+  /auth/refresh:
+    post: {security: [], summary: Rotate a refresh token, responses: {'200': {description: Tokens issued}}}
+  /auth/logout:
+    post: {security: [], summary: Revoke a refresh token, responses: {'200': {description: Logged out}}}
+  /auth/me:
+    get: {summary: Current user, responses: {'200': {description: User profile}}}
+  /customers:
+    get: {summary: List customers, responses: {'200': {description: Customers}}}
+    post: {summary: Create customer, requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Customer'}}}}, responses: {'201': {description: Customer}}}
+  /customers/{id}:
+    parameters: [{$ref: '#/components/parameters/ID'}]
+    get: {summary: Get customer, responses: {'200': {description: Customer}}}
+    patch: {summary: Update customer, responses: {'200': {description: Customer}}}
+    delete: {summary: Delete customer, responses: {'204': {description: Deleted}}}
+  /plans:
+    get: {summary: List plans, responses: {'200': {description: Plans}}}
+    post: {summary: Create plan, requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Plan'}}}}, responses: {'201': {description: Plan}}}
+  /plans/{id}:
+    parameters: [{$ref: '#/components/parameters/ID'}]
+    get: {summary: Get plan, responses: {'200': {description: Plan}}}
+    patch: {summary: Update plan, responses: {'200': {description: Plan}}}
+    delete: {summary: Delete plan, responses: {'204': {description: Deleted}}}
+  /subscriptions:
+    get: {summary: List subscriptions, responses: {'200': {description: Subscriptions}}}
+    post: {summary: Create subscription, parameters: [{$ref: '#/components/parameters/IdempotencyKey'}], responses: {'201': {description: Subscription}}}
+  /subscriptions/{id}:
+    parameters: [{$ref: '#/components/parameters/ID'}]
+    get: {summary: Get subscription, responses: {'200': {description: Subscription}}}
+    patch: {summary: Update subscription, responses: {'200': {description: Subscription}}}
+  /subscriptions/{id}/cancel: {post: {summary: Cancel subscription, parameters: [{$ref: '#/components/parameters/ID'}], responses: {'200': {description: Subscription}}}}
+  /subscriptions/{id}/pause: {post: {summary: Pause subscription, parameters: [{$ref: '#/components/parameters/ID'}], responses: {'200': {description: Subscription}}}}
+  /subscriptions/{id}/resume: {post: {summary: Resume subscription, parameters: [{$ref: '#/components/parameters/ID'}], responses: {'200': {description: Subscription}}}}
+  /subscriptions/{id}/change-plan: {post: {summary: Change plan with proration, parameters: [{$ref: '#/components/parameters/ID'}], responses: {'200': {description: Proration}}}}
+  /subscriptions/{id}/apply-coupon: {post: {summary: Apply coupon, parameters: [{$ref: '#/components/parameters/ID'}], responses: {'200': {description: Applied}}}}
+  /usage:
+    get: {summary: List usage for subscription_id, responses: {'200': {description: Usage events}}}
+    post: {summary: Record idempotent usage, parameters: [{$ref: '#/components/parameters/IdempotencyKey'}], responses: {'201': {description: Usage event}}}
+  /usage/summary: {get: {summary: Summarize usage, responses: {'200': {description: Usage summary}}}}
+  /coupons: {get: {summary: List coupons, responses: {'200': {description: Coupons}}}, post: {summary: Create coupon, responses: {'201': {description: Coupon}}}}
+  /coupons/{id}: {parameters: [{$ref: '#/components/parameters/ID'}], get: {summary: Get coupon, responses: {'200': {description: Coupon}}}, patch: {summary: Update coupon, responses: {'200': {description: Coupon}}}, delete: {summary: Delete coupon, responses: {'204': {description: Deleted}}}}
+  /tax-rules: {get: {summary: List tax rules, responses: {'200': {description: Tax rules}}}, post: {summary: Create tax rule, responses: {'201': {description: Tax rule}}}}
+  /tax-rules/{id}: {parameters: [{$ref: '#/components/parameters/ID'}], patch: {summary: Update tax rule, responses: {'200': {description: Tax rule}}}, delete: {summary: Delete tax rule, responses: {'204': {description: Deleted}}}}
+  /invoices: {get: {summary: List invoices, responses: {'200': {description: Invoices}}}}
+  /invoices/generate: {post: {summary: Generate invoice, parameters: [{$ref: '#/components/parameters/IdempotencyKey'}], responses: {'201': {description: Invoice}}}}
+  /invoices/{id}: {parameters: [{$ref: '#/components/parameters/ID'}], get: {summary: Get invoice with lines, responses: {'200': {description: Invoice}}}}
+  /invoices/{id}/finalize: {post: {summary: Finalize draft invoice, parameters: [{$ref: '#/components/parameters/ID'}], responses: {'200': {description: Invoice}}}}
+  /invoices/{id}/void: {post: {summary: Void invoice, parameters: [{$ref: '#/components/parameters/ID'}], responses: {'200': {description: Invoice}}}}
+  /invoices/{id}/pay: {post: {summary: Simulate payment, parameters: [{$ref: '#/components/parameters/ID'}, {$ref: '#/components/parameters/IdempotencyKey'}], responses: {'201': {description: Payment}}}}
+  /payments/simulate: {post: {summary: Simulate payment, parameters: [{$ref: '#/components/parameters/IdempotencyKey'}], responses: {'201': {description: Payment}}}}
+  /payments: {get: {summary: List payments, responses: {'200': {description: Payments}}}}
+  /payments/{id}: {parameters: [{$ref: '#/components/parameters/ID'}], get: {summary: Get payment, responses: {'200': {description: Payment}}}}
+components:
+  securitySchemes: {bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}}
+  parameters:
+    ID: {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+    IdempotencyKey: {name: Idempotency-Key, in: header, required: true, schema: {type: string, maxLength: 255}}
+  schemas:
+    Register: {type: object, required: [email,password,name], properties: {email: {type: string, format: email}, password: {type: string, minLength: 12}, name: {type: string}}}
+    Login: {type: object, required: [email,password], properties: {email: {type: string}, password: {type: string}}}
+    Customer: {type: object, required: [email,name,currency], properties: {email: {type: string}, name: {type: string}, currency: {type: string, example: USD}, billing_address: {type: object}}}
+    Plan: {type: object, required: [name,currency,billing_interval,pricing_model,base_price_cents], properties: {name: {type: string}, currency: {type: string, example: USD}, billing_interval: {type: string, enum: [monthly,yearly]}, pricing_model: {type: string, enum: [flat,per_seat,usage_based,tiered,hybrid]}, base_price_cents: {type: integer, format: int64}, pricing: {type: object}}}
+    Error: {type: object, properties: {error: {type: object, properties: {code: {type: string}, message: {type: string}, details: {}}}}}
+  responses:
+    ValidationError: {description: Invalid request, content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}}
+    Unauthorized: {description: Authentication required, content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}}

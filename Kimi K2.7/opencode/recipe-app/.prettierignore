@@ -1,0 +1,13 @@
+src
+node_modules
+.next
+dist
+out
+*.log
+.env.local
+.env.*.local
+pnpm-lock.yaml
+Dockerfile
+docker-compose.yml
+.dockerignore
+public/*.svg

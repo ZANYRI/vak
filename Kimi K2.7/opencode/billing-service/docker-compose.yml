@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: billing
+      POSTGRES_PASSWORD: billing
+      POSTGRES_DB: billing
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U billing -d billing" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  queue:
+    image: nats:2-alpine
+    command: "-js -m 8222"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8222/healthz" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    image: migrate/migrate:v4.17.1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations
+    command: [ "-path", "/migrations", "-database", "postgres://billing:billing@postgres:5432/billing?sslmode=disable", "up" ]
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: [ "/app/api" ]
+    environment:
+      APP_ENV: local
+      HTTP_PORT: "8080"
+      METRICS_PORT: "9090"
+      DATABASE_URL: postgres://billing:billing@postgres:5432/billing?sslmode=disable
+      QUEUE_URL: nats://queue:4222
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me-access-secret-minimum-32-characters}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh-secret-minimum-32-characters}
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: [ "/app/worker" ]
+    environment:
+      APP_ENV: local
+      DATABASE_URL: postgres://billing:billing@postgres:5432/billing?sslmode=disable
+      QUEUE_URL: nats://queue:4222
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me-access-secret-minimum-32-characters}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh-secret-minimum-32-characters}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: [ "/app/scheduler" ]
+    environment:
+      APP_ENV: local
+      DATABASE_URL: postgres://billing:billing@postgres:5432/billing?sslmode=disable
+      QUEUE_URL: nats://queue:4222
+      SCHEDULER_INTERVAL: "*/1 * * * *"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fdfaf3"/>
+      <stop offset="100%" stop-color="#f6efe1"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="980" cy="120" r="220" fill="#c8442a" opacity="0.08"/>
+  <circle cx="180" cy="540" r="160" fill="#6b7d3f" opacity="0.1"/>
+  <text x="80" y="300" font-family="Georgia, serif" font-size="92" font-weight="600" fill="#2b2724">Saveur</text>
+  <text x="84" y="370" font-family="Georgia, serif" font-size="40" fill="#7c7268">Recipes from around the world</text>
+  <text x="84" y="470" font-family="sans-serif" font-size="28" fill="#c8442a">RU · EN</text>
+</svg>

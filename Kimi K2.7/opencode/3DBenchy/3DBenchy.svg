@@ -1,0 +1,349 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" role="img" aria-labelledby="benchyTitle benchyDesc">
+  <title id="benchyTitle">Animated 3D Benchy</title>
+  <desc id="benchyDesc">A self-contained animated pseudo-3D SVG illustration of the classic 3D Benchy benchmark tugboat, gently rocking on layered vector waves.</desc>
+
+  <defs>
+    <!-- Plastic body gradients -->
+    <linearGradient id="hullTopGrad" x1="0%" y1="0%" x2="100%" y2="20%">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="50%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="hullSideGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="hullBowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="hullBottomGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0369a1" />
+      <stop offset="100%" stop-color="#0c4a6e" />
+    </linearGradient>
+    <linearGradient id="cabinFrontGrad" x1="0%" y1="0%" x2="100%" y2="10%">
+      <stop offset="0%" stop-color="#7dd3fc" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="cabinSideGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#075985" />
+    </linearGradient>
+    <linearGradient id="roofGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#67e8f9" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+    <linearGradient id="chimneySideGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#0e7490" />
+    </linearGradient>
+    <linearGradient id="deckGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="windowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0c2e4e" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <radialGradient id="portholeGrad" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#1e3a5f" />
+      <stop offset="100%" stop-color="#020617" />
+    </radialGradient>
+    <linearGradient id="waveFrontGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.9" />
+    </linearGradient>
+    <linearGradient id="waveMidGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0.65" />
+    </linearGradient>
+    <linearGradient id="waveBackGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#bae6fd" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0.45" />
+    </linearGradient>
+    <linearGradient id="glareGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0.45" />
+      <stop offset="55%" stop-color="#ffffff" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="12" result="blur" />
+      <feOffset in="blur" dx="0" dy="16" result="offsetBlur" />
+      <feComponentTransfer in="offsetBlur" result="shadow">
+        <feFuncA type="linear" slope="0.35" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode in="shadow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="castShadowBlur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="18" />
+    </filter>
+    <filter id="innerShadow">
+      <feOffset dx="0" dy="3" />
+      <feGaussianBlur stdDeviation="4" result="offset-blur" />
+      <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse" />
+      <feFlood flood-color="#002a4a" flood-opacity="0.35" result="color" />
+      <feComposite operator="in" in="color" in2="inverse" result="shadow" />
+      <feComposite operator="over" in="shadow" in2="SourceGraphic" />
+    </filter>
+    <clipPath id="hullSideClip">
+      <path d="M460 460 C460 460 520 430 650 428 C770 426 880 455 920 490 L900 585 C850 600 720 610 600 610 C490 610 400 590 380 560 Z" />
+    </clipPath>
+  </defs>
+
+  <style>
+    :root {
+      --rock-dur: 3.6s;
+      --bob-dur: 3.6s;
+      --wave-dur: 6s;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .boat-rock,
+      .boat-bob,
+      .wave-slide,
+      .hull-glare {
+        animation: none !important;
+        transform: none !important;
+      }
+    }
+
+    .boat-rock {
+      transform-origin: 600px 540px;
+      animation: rock var(--rock-dur) ease-in-out infinite alternate;
+    }
+
+    .boat-bob {
+      animation: bob var(--bob-dur) ease-in-out infinite alternate;
+    }
+
+    .wave-slide {
+      animation: waveMove var(--wave-dur) linear infinite;
+    }
+
+    .wave-slide-mid {
+      animation-duration: 8s;
+    }
+
+    .wave-slide-back {
+      animation-duration: 11s;
+    }
+
+    .hull-glare {
+      animation: glare 4.5s ease-in-out infinite;
+    }
+
+    @keyframes rock {
+      from { transform: rotate(-2.5deg); }
+      to { transform: rotate(2.5deg); }
+    }
+
+    @keyframes bob {
+      from { transform: translateY(-8px); }
+      to { transform: translateY(8px); }
+    }
+
+    @keyframes waveMove {
+      from { transform: translateX(-60px); }
+      to { transform: translateX(60px); }
+    }
+
+    @keyframes glare {
+      0% { transform: translateX(-160px); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateX(160px); opacity: 0; }
+    }
+
+    .outline {
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      fill:none;
+    }
+  </style>
+
+  <!-- Background subtle gradient -->
+  <rect width="1200" height="800" fill="url(#waveBackGrad)" opacity="0.15" />
+
+  <!-- Water / waves group -->
+  <g id="waves">
+    <!-- Back wave layer -->
+    <path class="wave-slide wave-slide-back" d="M-120 620 Q-30 590 60 620 T240 620 T420 620 T600 620 T780 620 T960 620 T1140 620 T1320 620 V800 H-120 Z" fill="url(#waveBackGrad)" />
+    <path class="wave-slide wave-slide-back" d="M-120 640 Q-30 610 60 640 T240 640 T420 640 T600 640 T780 640 T960 640 T1140 640 T1320 640 V800 H-120 Z" fill="url(#waveBackGrad)" opacity="0.7" />
+
+    <!-- Middle wave layer -->
+    <path class="wave-slide wave-slide-mid" d="M-120 660 Q-30 625 60 660 T240 660 T420 660 T600 660 T780 660 T960 660 T1140 660 T1320 660 V800 H-120 Z" fill="url(#waveMidGrad)" />
+
+    <!-- Front wave layer -->
+    <path class="wave-slide" d="M-120 700 Q-30 660 60 700 T240 700 T420 700 T600 700 T780 700 T960 700 T1140 700 T1320 700 V800 H-120 Z" fill="url(#waveFrontGrad)" />
+    <path class="wave-slide" d="M-120 735 Q-30 700 60 735 T240 735 T420 735 T600 735 T780 735 T960 735 T1140 735 T1320 735 V800 H-120 Z" fill="url(#waveFrontGrad)" opacity="0.7" />
+  </g>
+
+  <!-- Cast shadow under the boat -->
+  <g id="shadow">
+    <ellipse cx="600" cy="620" rx="260" ry="28" fill="#0f2d48" opacity="0.28" filter="url(#castShadowBlur)" />
+  </g>
+
+  <!-- Benchy group with rocking and bobbing -->
+  <g id="benchy" class="boat-rock">
+    <g class="boat-bob">
+
+      <!-- Hull group -->
+      <g id="hull" filter="url(#softShadow)">
+        <!-- Lower curved hull body -->
+        <path d="M380 560 C400 620 520 645 650 645 C780 645 900 620 925 540 L900 585 C850 615 740 630 620 630 C500 630 410 605 380 560 Z" fill="url(#hullBottomGrad)" />
+        <!-- Side wall main -->
+        <path d="M460 460 C500 435 600 425 700 430 C800 435 890 465 920 490 L925 540 C900 620 780 645 650 645 C520 645 400 620 380 560 L380 505 C390 480 420 470 460 460 Z" fill="url(#hullSideGrad)" />
+        <!-- Upper rim protruding -->
+        <path d="M455 450 C510 425 610 415 715 420 C815 425 895 456 928 485 L920 490 C890 465 800 435 700 430 C600 425 500 435 460 460 L455 450 Z" fill="#67e8f9" />
+        <path d="M455 450 C510 425 610 415 715 420 C815 425 895 456 928 485 L932 492 L928 500 C895 472 810 443 710 437 C605 432 505 442 452 468 L448 458 Z" fill="url(#hullTopGrad)" />
+        <!-- Inner shadow under rim -->
+        <path d="M460 465 C510 442 605 432 705 437 C805 442 885 470 915 492 L905 500 C875 480 795 455 700 450 C600 446 510 456 465 478 Z" fill="#00416a" opacity="0.35" />
+        <!-- Bow front face -->
+        <path d="M380 505 C385 485 415 470 455 450 L460 460 C420 470 390 480 380 505 L380 560 C375 545 375 520 380 505 Z" fill="url(#hullBowGrad)" />
+        <!-- Stern flat back -->
+        <path d="M920 490 L925 540 C930 525 930 505 925 490 Z" fill="#075985" />
+        <!-- Deck surface (visible behind cabin) -->
+        <path id="deck" d="M472 458 C520 437 615 428 708 433 C790 437 855 460 885 480 L860 458 C820 435 740 425 660 425 C580 425 510 435 472 458 Z" fill="url(#deckGrad)" />
+
+        <!-- Hull outlines -->
+        <path class="outline" d="M455 450 C420 470 390 480 380 505 C375 545 395 590 430 615 C490 650 580 660 660 660 C740 660 830 650 890 615 C915 600 930 570 925 540 L920 490 C890 465 800 435 700 430 C600 425 500 435 460 460 L455 450 Z" stroke="#0c4a6e" stroke-width="3.5" fill="none" />
+        <path class="outline" d="M460 460 C500 435 600 425 700 430 C800 435 890 465 920 490" stroke="#7dd3fc" stroke-width="2" fill="none" />
+        <path class="outline" d="M455 450 C510 425 610 415 715 420 C815 425 895 456 928 485" stroke="#a5f3fc" stroke-width="2.5" fill="none" />
+      </g>
+
+      <!-- Cabin group -->
+      <g id="cabin" filter="url(#softShadow)">
+        <!-- Cabin side wall -->
+        <path d="M560 460 L575 340 C620 330 700 335 745 350 L760 460 C700 452 620 452 560 460 Z" fill="url(#cabinSideGrad)" />
+        <!-- Cabin front wall -->
+        <path d="M560 460 L575 340 C555 345 535 360 525 380 L515 450 C525 455 540 458 560 460 Z" fill="url(#cabinFrontGrad)" />
+        <!-- Cabin roof top -->
+        <path d="M568 340 C615 328 705 330 748 348 L735 330 C690 315 610 312 565 322 L568 340 Z" fill="url(#roofGrad)" />
+        <!-- Roof thickness edge -->
+        <path d="M560 345 L565 322 C610 312 690 315 735 330 L740 350 C695 335 615 330 560 345 Z" fill="#67e8f9" />
+        <path d="M560 345 C615 330 695 335 740 350 L748 348 L745 330 C700 315 620 312 575 322 L565 322 L560 345 Z" fill="#0891b2" opacity="0.5" />
+        <!-- Cabin outlines -->
+        <path class="outline" d="M560 460 L575 340 C620 330 700 335 745 350 L760 460" stroke="#0c4a6e" stroke-width="3" fill="none" />
+        <path class="outline" d="M568 340 C615 328 705 330 748 348" stroke="#a5f3fc" stroke-width="2.5" fill="none" />
+        <path class="outline" d="M560 345 C615 330 695 335 740 350" stroke="#67e8f9" stroke-width="2" fill="none" />
+      </g>
+
+      <!-- Chimney group -->
+      <g id="chimney" filter="url(#softShadow)">
+        <!-- Chimney bottom ellipse -->
+        <ellipse cx="655" cy="325" rx="42" ry="13" fill="#0ea5e9" />
+        <!-- Chimney body -->
+        <path d="M613 325 L620 245 C660 238 700 246 710 252 L705 325 C685 312 633 312 613 325 Z" fill="url(#chimneySideGrad)" />
+        <!-- Chimney top ellipse -->
+        <ellipse cx="665" cy="245" rx="47" ry="16" fill="#22d3ee" />
+        <!-- Dark inner opening -->
+        <ellipse cx="665" cy="247" rx="34" ry="10" fill="#083344" />
+        <!-- Top rim highlight -->
+        <ellipse cx="665" cy="243" rx="45" ry="14" fill="none" stroke="#a5f3fc" stroke-width="2.5" />
+        <path d="M635 238 Q650 232 680 236" stroke="#cffafe" stroke-width="2.5" fill="none" />
+        <!-- Chimney outline -->
+        <path class="outline" d="M613 325 L620 245 C660 238 700 246 710 252 L705 325" stroke="#0c4a6e" stroke-width="2.5" fill="none" />
+      </g>
+
+      <!-- Windows and portholes group -->
+      <g id="windows">
+        <!-- Cabin front window -->
+        <path d="M540 380 C545 370 555 362 565 360 L570 420 C560 422 548 425 536 430 L535 400 C535 392 537 386 540 380 Z" fill="url(#windowGrad)" stroke="#0c4a6e" stroke-width="2.5" />
+        <path d="M545 375 C550 368 558 364 565 362" stroke="#67e8f9" stroke-width="2" fill="none" />
+        <ellipse cx="548" cy="375" rx="3" ry="5" fill="#bae6fd" opacity="0.8" transform="rotate(-15 548 375)" />
+
+        <!-- Side windows -->
+        <g transform="translate(600, 365) rotate(3)">
+          <rect x="0" y="0" width="42" height="44" rx="6" ry="6" fill="url(#windowGrad)" stroke="#0c4a6e" stroke-width="2" />
+          <path d="M6 6 Q12 3 20 2" stroke="#67e8f9" stroke-width="2" fill="none" />
+          <ellipse cx="10" cy="10" rx="2.5" ry="4" fill="#bae6fd" opacity="0.7" />
+        </g>
+        <g transform="translate(660, 370) rotate(4)">
+          <rect x="0" y="0" width="40" height="41" rx="6" ry="6" fill="url(#windowGrad)" stroke="#0c4a6e" stroke-width="2" />
+          <path d="M6 6 Q12 3 18 2" stroke="#67e8f9" stroke-width="2" fill="none" />
+          <ellipse cx="10" cy="9" rx="2.5" ry="4" fill="#bae6fd" opacity="0.7" />
+        </g>
+
+        <!-- Portholes on hull side -->
+        <g>
+          <circle cx="540" cy="530" r="16" fill="url(#portholeGrad)" stroke="#0c4a6e" stroke-width="3" />
+          <path d="M532 520 Q538 516 546 518" stroke="#a5f3fc" stroke-width="2" fill="none" />
+          <circle cx="534" cy="524" r="3" fill="#ffffff" opacity="0.75" />
+        </g>
+        <g>
+          <circle cx="620" cy="540" r="15" fill="url(#portholeGrad)" stroke="#0c4a6e" stroke-width="3" />
+          <path d="M613 531 Q619 527 627 529" stroke="#a5f3fc" stroke-width="2" fill="none" />
+          <circle cx="615" cy="535" r="2.8" fill="#ffffff" opacity="0.75" />
+        </g>
+        <g>
+          <circle cx="700" cy="545" r="14" fill="url(#portholeGrad)" stroke="#0c4a6e" stroke-width="3" />
+          <path d="M694 537 Q699 533 706 535" stroke="#a5f3fc" stroke-width="2" fill="none" />
+          <circle cx="696" cy="541" r="2.6" fill="#ffffff" opacity="0.75" />
+        </g>
+      </g>
+
+      <!-- Highlights group -->
+      <g id="highlights">
+        <!-- Bow edge highlight -->
+        <path d="M385 510 C390 495 415 480 445 465" stroke="#a5f3fc" stroke-width="3" fill="none" stroke-linecap="round" />
+        <!-- Upper hull rim highlight -->
+        <path d="M490 438 C560 425 640 422 720 428 C800 434 870 455 905 478" stroke="#e0f2fe" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.85" />
+        <!-- Cabin roof highlight -->
+        <path d="M575 328 C620 318 690 320 730 333" stroke="#e0f2fe" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <!-- Chimney top highlight -->
+        <path d="M640 242 Q660 235 685 238" stroke="#cffafe" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <!-- Animated glossy hull light streak -->
+        <g clip-path="url(#hullSideClip)">
+          <rect class="hull-glare" x="450" y="440" width="60" height="160" fill="url(#glareGrad)" opacity="0.65" transform="rotate(-6 480 520)" />
+        </g>
+      </g>
+
+      <!-- Technical details group -->
+      <g id="details">
+        <!-- Layer lines -->
+        <g stroke="#0c4a6e" stroke-width="1" opacity="0.25">
+          <path d="M420 500 C470 480 560 470 650 472" />
+          <path d="M410 520 C470 500 560 490 660 492" />
+          <path d="M405 540 C470 520 570 510 680 512" />
+          <path d="M400 560 C470 545 580 535 700 535" />
+          <path d="M402 580 C480 565 590 555 710 555" />
+          <path d="M415 600 C500 585 610 575 720 575" />
+        </g>
+        <!-- Bow wave guard / arch -->
+        <path d="M460 465 C455 450 452 445 450 440" stroke="#0c4a6e" stroke-width="2" fill="none" opacity="0.5" />
+        <path d="M465 470 C462 460 460 455 458 448" stroke="#a5f3fc" stroke-width="1.5" fill="none" opacity="0.6" />
+        <!-- Stern arch detail -->
+        <path d="M900 495 C902 485 904 478 905 472" stroke="#0c4a6e" stroke-width="2" fill="none" opacity="0.4" />
+        <!-- Small bridge-like deck rail -->
+        <g stroke="#0c4a6e" stroke-width="2" opacity="0.45">
+          <line x1="630" y1="438" x2="630" y2="452" />
+          <line x1="650" y1="440" x2="650" y2="454" />
+          <line x1="670" y1="443" x2="670" y2="457" />
+          <line x1="610" y1="452" x2="690" y2="460" />
+        </g>
+        <!-- Layer lines on cabin -->
+        <g stroke="#0c4a6e" stroke-width="1" opacity="0.2">
+          <line x1="575" y1="360" x2="745" y2="370" />
+          <line x1="573" y1="380" x2="750" y2="390" />
+          <line x1="570" y1="400" x2="755" y2="410" />
+          <line x1="565" y1="420" x2="758" y2="430" />
+        </g>
+        <!-- Tiny engraved label -->
+        <g transform="translate(780, 500) rotate(2)" opacity="0.55">
+          <rect x="0" y="0" width="74" height="18" rx="2" ry="2" fill="none" stroke="#0c4a6e" stroke-width="1" />
+          <text x="37" y="13" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#0c4a6e" font-weight="bold" letter-spacing="1">3DBENCHY</text>
+        </g>
+      </g>
+
+    </g>
+  </g>
+
+  <!-- Foreground wave accents -->
+  <path class="wave-slide" d="M-120 770 Q-30 735 60 770 T240 770 T420 770 T600 770 T780 770 T960 770 T1140 770 T1320 770 V800 H-120 Z" fill="#0ea5e9" fill-opacity="0.35" />
+</svg>

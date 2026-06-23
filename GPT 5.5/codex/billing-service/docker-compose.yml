@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: billing
+      POSTGRES_USER: billing
+      POSTGRES_PASSWORD: billing
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U billing -d billing"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  queue:
+    image: nats:2.11-alpine
+    command: ["-js", "-sd", "/data", "-m", "8222"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - nats_data:/data
+
+  api:
+    build: .
+    environment: &app_env
+      APP_ENV: local
+      HTTP_PORT: "8080"
+      DATABASE_URL: postgres://billing:billing@postgres:5432/billing?sslmode=disable
+      QUEUE_URL: nats://queue:4222
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-local-development-access-secret-change-me-32}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-local-development-refresh-secret-change-me-32}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@example.com}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-admin-password-change-me}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
+
+  worker:
+    build: .
+    entrypoint: ["/app/worker"]
+    environment: *app_env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
+
+  scheduler:
+    build: .
+    entrypoint: ["/app/scheduler"]
+    environment: *app_env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  nats_data:

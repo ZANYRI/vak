@@ -1,0 +1,51 @@
+{
+  "name": "recipe-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bilingual recipe website built with Next.js 16, React 19 and Tailwind CSS 4",
+  "packageManager": "pnpm@10.33.2",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.40.0",
+    "next": "^16.2.9",
+    "next-intl": "^4.13.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^9.26.0",
+    "@next/eslint-plugin-next": "^16.2.9",
+    "@tailwindcss/postcss": "^4.3.1",
+    "@types/node": "^22.15.20",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.26.0",
+    "eslint-config-next": "^16.2.9",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "postcss": "^8.5.8",
+    "prettier": "^3.8.4",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "tailwindcss": "^4.3.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

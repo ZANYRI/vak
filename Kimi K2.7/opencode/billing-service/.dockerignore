@@ -1,0 +1,24 @@
+# Binaries
+/bin/
+*.exe
+*.dll
+*.so
+
+# Go
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Env
+.env
+.env.local
+
+# Test coverage
+coverage.out
+
+# OS
+.DS_Store
+Thumbs.db

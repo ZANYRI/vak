@@ -1,0 +1,26 @@
+DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS idempotency_responses;
+DROP TABLE IF EXISTS jobs;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS invoice_lines;
+DROP TABLE IF EXISTS invoices;
+DROP TABLE IF EXISTS subscription_coupons;
+DROP TABLE IF EXISTS coupons;
+DROP TABLE IF EXISTS usage_summaries;
+DROP TABLE IF EXISTS usage_events;
+DROP TABLE IF EXISTS subscriptions;
+DROP TABLE IF EXISTS pricing_tiers;
+DROP TABLE IF EXISTS plan_prices;
+DROP TABLE IF EXISTS plans;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS refresh_tokens;
+DROP TABLE IF EXISTS users;
+
+DROP TYPE IF EXISTS payment_status;
+DROP TYPE IF EXISTS job_status;
+DROP TYPE IF EXISTS invoice_status;
+DROP TYPE IF EXISTS subscription_status;
+DROP TYPE IF EXISTS coupon_type;
+DROP TYPE IF EXISTS plan_model;
+DROP TYPE IF EXISTS billing_interval;
+DROP TYPE IF EXISTS user_role;
